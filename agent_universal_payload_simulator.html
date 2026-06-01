@@ -1,0 +1,2853 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>סימולטור פלט Agent אוניברסלי</title>
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --soft: #f9fafb;
+      --info: #e0f2fe;
+      --info-text: #075985;
+      --danger: #fee2e2;
+      --danger-text: #991b1b;
+      --success: #dcfce7;
+      --success-text: #166534;
+      --primary: #111827;
+      --primary-text: #ffffff;
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, "Segoe UI", Arial, "Noto Sans Hebrew", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1, h2, h3, p { margin: 0; }
+
+    .top {
+      margin-bottom: 20px;
+    }
+
+    .top-copy { flex: 1; }
+
+    .endpoint-picker {
+      min-width: 220px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .endpoint-picker label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .endpoint-picker select { width: 100%; }
+
+    @media (max-width: 720px) {
+      .top { display: block; }
+      .endpoint-picker { margin-top: 12px; }
+    }
+
+    .top h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .top p {
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+
+    .card-body {
+      padding: 16px;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .button {
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 12px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .button:hover { background: var(--soft); }
+
+    .button.primary {
+      background: var(--primary);
+      color: var(--primary-text);
+      border-color: var(--primary);
+    }
+
+    .button.small {
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 520px;
+      resize: vertical;
+      direction: ltr;
+      text-align: left;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      outline: none;
+      background: #fff;
+    }
+
+    textarea:focus { border-color: #9ca3af; }
+
+    select {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 9px 10px;
+      font-size: 14px;
+      background: #fff;
+    }
+
+    .top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .status {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .error {
+      margin-top: 10px;
+      color: var(--danger-text);
+      background: var(--danger);
+      padding: 10px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .tab {
+      padding: 10px;
+      border: 1px solid var(--border);
+      background: white;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .tab.active {
+      background: var(--primary);
+      color: var(--primary-text);
+      border-color: var(--primary);
+    }
+
+    .entity-switcher {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-start;
+      margin-bottom: 14px;
+    }
+
+    .screen {
+      max-width: 820px;
+      margin: 0 auto;
+      background: #f8fafc;
+      border-radius: 28px;
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .header-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+
+    .header-content {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      flex-direction: row-reverse;
+    }
+
+    .avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: #f3f4f6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      flex: 0 0 auto;
+    }
+
+    .header-main {
+      flex: 1;
+      display: grid;
+      gap: 12px;
+    }
+
+    .name {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .entity-type {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .attributes {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    @media (max-width: 700px) {
+      .attributes { grid-template-columns: 1fr 1fr; }
+    }
+
+    .attr-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      justify-content: flex-start;
+    }
+
+    .chip {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 12px;
+    }
+
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .badge {
+      background: var(--info);
+      color: var(--info-text);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .accessibility {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .remark {
+      background: var(--info);
+      color: var(--info-text);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-size: 14px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .section {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      overflow: hidden;
+    }
+
+    .section-toggle {
+      width: 100%;
+      border: 0;
+      background: white;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .section-content {
+      padding: 0 16px 16px;
+    }
+
+    .schedule-group {
+      margin-bottom: 18px;
+    }
+
+    .schedule-title {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .schedule-table {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .schedule-row {
+      display: grid;
+      grid-template-columns: 70px 1fr;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    .schedule-row:last-child { border-bottom: 0; }
+
+    .day-cell {
+      background: var(--soft);
+      padding: 10px;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .hours-cell {
+      padding: 10px;
+      display: grid;
+      gap: 4px;
+    }
+
+    .closed { color: #9ca3af; }
+
+    .note { color: var(--muted); }
+
+    .contact-item,
+    .location-item,
+    .service-item,
+    .detail-row {
+      border-bottom: 1px solid var(--border);
+      padding: 10px 0;
+    }
+
+    .contact-item:last-child,
+    .location-item:last-child,
+    .service-item:last-child,
+    .detail-row:last-child { border-bottom: 0; }
+
+    .contact-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .contact-action {
+      direction: ltr;
+      text-align: left;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .label {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .muted { color: var(--muted); }
+
+    .message {
+      background: var(--soft);
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .service-group {
+      margin-bottom: 16px;
+    }
+
+    .service-title {
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .service-item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 8px;
+    }
+
+    .detail-section {
+      margin-bottom: 18px;
+    }
+
+    .detail-title {
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .detail-row {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 12px;
+      font-size: 14px;
+    }
+
+    pre {
+      margin: 0;
+      direction: ltr;
+      text-align: left;
+      background: #0f172a;
+      color: #e5e7eb;
+      border-radius: 16px;
+      padding: 16px;
+      overflow: auto;
+      max-height: 760px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .tests {
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    .test-pass { color: var(--success-text); }
+    .test-fail { color: var(--danger-text); }
+
+    .provider-screen {
+      max-width: 980px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+      color: #17213a;
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      padding: 24px;
+    }
+
+    .provider-card {
+      border: 1px solid #d9e2ec;
+      border-radius: 8px;
+      background: #fff;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(30,50,80,.04);
+    }
+
+    .provider-section-title {
+      color: #06489b;
+      font-size: 20px;
+      font-weight: 800;
+      border-bottom: 1px solid #bcdff5;
+      padding-bottom: 12px;
+      margin: 0 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .service-screen-title {
+      color: #06489b;
+      font-size: 18px;
+      font-weight: 800;
+      text-align: right;
+      margin: 0;
+    }
+
+    .service-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(260px, .95fr);
+      grid-template-areas: "main side";
+      gap: 28px;
+      align-items: start;
+    }
+
+    .service-layout.single {
+      grid-template-columns: 1fr;
+      grid-template-areas: "main";
+    }
+
+    .service-main-column {
+      grid-area: main;
+      display: grid;
+      gap: 18px;
+    }
+
+    .service-side-column {
+      grid-area: side;
+      display: grid;
+      gap: 18px;
+    }
+
+    .doctor-hero {
+      display: grid;
+      grid-template-columns: 86px 1fr;
+      gap: 16px;
+      background: #eaf6ff;
+      border-radius: 8px;
+      padding: 16px;
+      align-items: center;
+    }
+
+    .doctor-avatar {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: linear-gradient(#e8edf3,#cfd8e3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #06489b;
+      border: 1px solid #ccd7e3;
+      font-weight: 800;
+    }
+
+    .doctor-name {
+      font-size: 22px;
+      color: #06489b;
+      font-weight: 800;
+      margin: 0 0 8px;
+    }
+
+    .doctor-meta {
+      font-size: 15px;
+      line-height: 1.8;
+      color: #1d2840;
+    }
+
+    .provider-chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 14px 0 0;
+      justify-content: flex-start;
+    }
+
+    .provider-chip {
+      border-radius: 9px;
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 700;
+      background: #eef3f9;
+      border: 1px solid transparent;
+    }
+
+    .provider-chip.green { background: #e7f8ea; color: #167a31; }
+    .provider-chip.blue { background: #eaf3ff; color: #1662b8; border-color: #b8d6ff; }
+    .provider-chip.red { background: #fff0f2; color: #d5243f; border-color: #ffc2cb; }
+
+    .provider-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .provider-notice,
+    .absence-item {
+      display: grid;
+      grid-template-columns: 24px 1fr;
+      gap: 8px;
+      align-items: start;
+      font-size: 14px;
+      line-height: 1.7;
+      color: #2e3447;
+      padding: 8px 0;
+    }
+
+    .provider-notice {
+      background: #eaffd2;
+      border: 1px solid #b7e889;
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 10px;
+    }
+
+    .provider-icon-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #2176ff;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .warn-icon {
+      color: #f5a400;
+      font-weight: 900;
+      font-size: 18px;
+      line-height: 1.3;
+    }
+
+    .provider-accordion {
+      border: 1px solid #d9e2ec;
+      border-radius: 12px;
+      margin: 10px 0;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .provider-accordion-head {
+      width: 100%;
+      border: 0;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 13px 14px;
+      font-weight: 800;
+      color: #103b83;
+      border-bottom: 1px solid #d9e2ec;
+      text-align: right;
+      font: inherit;
+    }
+
+    .provider-accordion-body { padding: 0 14px 10px; }
+
+    .provider-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    .provider-table th {
+      background: #e5f6ff;
+      color: #17213a;
+      padding: 10px;
+      border: 1px solid #cde8f7;
+      font-weight: 800;
+    }
+
+    .provider-table td {
+      padding: 10px;
+      border-bottom: 1px solid #dce7ef;
+      vertical-align: top;
+    }
+
+    .provider-table tr.day-break td { border-top: 1px solid #bcdff5; }
+    .closed { color: #454b5b; }
+
+    .contact-row {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 8px;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #e0e6ee;
+    }
+
+    .contact-row:last-child { border-bottom: 0; }
+    .contact-label { font-weight: 800; color: #10295c; }
+    .contact-value { direction: ltr; text-align: left; }
+    .contact-values {
+      display: grid;
+      gap: 6px;
+      justify-items: start;
+    }
+    .contact-value-item {
+      direction: ltr;
+      text-align: left;
+    }
+
+    .treat-row {
+      display: grid;
+      grid-template-columns: 1fr 84px;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #e3e9f1;
+      font-size: 14px;
+    }
+
+    .treat-row:last-child { border-bottom: 0; }
+
+    .coverage-badge {
+      justify-self: start;
+      border-radius: 7px;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid #c8d7e6;
+      background: #f4f6f8;
+      color: #334;
+    }
+
+    .coverage-badge.basket { background: #effcf3; color: #15703a; border-color: #9ee3b4; }
+    .coverage-badge.supplementary { background: #eef5ff; color: #1764d8; border-color: #acd0ff; }
+    .coverage-badge.unknown { background: #f3f4f6; color: #555; border-color: #ddd; }
+
+    .kv {
+      padding: 8px 0;
+      border-bottom: 1px solid #e5edf4;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .kv:last-child { border-bottom: 0; }
+    .kv b { color: #10295c; }
+
+    .provider-empty {
+      color: #7d8794;
+      text-align: center;
+      padding: 28px;
+      border: 1px dashed #cfd8e3;
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .search-results-screen {
+      max-width: 860px;
+      margin: 0 auto;
+      display: grid;
+      gap: 12px;
+    }
+
+    .search-result-card {
+      background: #fff;
+      border: 1px solid #d9e2ec;
+      border-radius: 8px;
+      padding: 14px 18px;
+      display: grid;
+      gap: 12px;
+      box-shadow: 0 1px 3px rgba(30,50,80,.04);
+    }
+
+    .search-result-hero {
+      display: grid;
+      grid-template-columns: 1fr 58px;
+      gap: 14px;
+      align-items: start;
+      background: #eaf6ff;
+      border-radius: 4px;
+      padding: 12px 14px;
+    }
+
+    .search-result-avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: #cfeeff;
+      color: #06489b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+    }
+
+    .search-result-name {
+      color: #1a73e8;
+      font-size: 24px !important;
+      line-height: 1.25;
+      font-weight: 800;
+      text-decoration: underline;
+      margin-bottom: 7px;
+    }
+
+    .payload-toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .payload-title {
+      color: #596273;
+      font-size: 13px;
+      font-weight: 700;
+      margin-inline-start: auto;
+    }
+
+    .search-result-meta {
+      color: #2f394a;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .search-result-warning {
+      display: grid;
+      grid-template-columns: 22px 1fr;
+      gap: 8px;
+      color: #4b5563;
+      font-size: 14px;
+      align-items: start;
+    }
+
+    .search-result-divider {
+      height: 1px;
+      background: #d7e6f2;
+    }
+
+    .search-result-footer {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-start;
+      color: #2f394a;
+      font-size: 14px;
+    }
+
+    .search-result-location,
+    .search-result-message {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .search-result-message {
+      background: #eaffd2;
+      border: 1px solid #b7e889;
+      border-radius: 8px;
+      color: #35522c;
+      padding: 5px 10px;
+    }
+
+    .search-result-chip {
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: #eaf6ff;
+      color: #1662b8;
+      font-size: 13px;
+      border: 1px solid #b8d6ff;
+      font-weight: 700;
+    }
+
+    .search-result-chip.green {
+      background: #e7f8ea;
+      color: #167a31;
+      border-color: transparent;
+    }
+
+    @media (max-width: 1000px) {
+      .provider-grid { grid-template-columns: 1fr; }
+      .provider-screen { padding: 18px; }
+      .service-layout {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "main"
+          "side";
+      }
+    }
+
+    @media (max-width: 560px) {
+      .provider-screen { padding: 14px; }
+      .doctor-hero { grid-template-columns: 1fr; }
+      .doctor-avatar { width: 64px; height: 64px; }
+      .contact-row { grid-template-columns: 1fr; }
+      .contact-value { text-align: right; }
+      .tabs { grid-template-columns: 1fr; }
+      .search-result-hero { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="top">
+      <div class="top-copy">
+        <h1>סימולטור פלט Agent אוניברסלי</h1>
+        <p>הדביקי JSON מקור. הסימולטור ימיר אותו ל־response payload מאוחד; פרטי קליינט ו־locale נגזרים מה־endpoint ומוחזרים רק ב־metadata.</p>
+      </div>
+      <div class="endpoint-picker">
+        <label for="endpointType">סוג endpoint</label>
+        <select id="endpointType">
+          <option value="app">אפליקציה</option>
+          <option value="online">אונליין</option>
+          <option value="mlh">מל&quot;ה</option>
+          <option value="serviceGuide">מדריך השירותים</option>
+        </select>
+        <div id="endpointStatus" class="status"></div>
+      </div>
+    </div>
+
+    <div class="layout">
+      <section class="card">
+        <div class="card-body">
+          <div class="toolbar">
+            <button class="button" id="loadSampleBtn">טען דוגמה</button>
+            <h2>JSON מקור</h2>
+          </div>
+          <textarea id="jsonInput" spellcheck="false"></textarea>
+          <div id="jsonStatus" class="status"></div>
+          <div id="jsonError" class="error" style="display:none"></div>
+          <div class="tests card" style="box-shadow:none">
+            <div class="card-body">
+              <button class="provider-accordion-head" type="button" onclick="toggleMappingTests()">
+                <span>בדיקות מיפוי פנימיות</span>
+                <span id="mappingTestsChevron">⌄</span>
+              </button>
+              <div id="mappingTestsBody" style="display:none; padding-top:10px">
+              <div id="testResults"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div id="entitySwitcher" class="entity-switcher"></div>
+        <div class="tabs">
+          <button class="tab" data-tab="results">תוצאות חיפוש</button>
+          <button class="tab active" data-tab="screen">פרטי רופא</button>
+          <button class="tab" data-tab="payload">Payload</button>
+        </div>
+        <div id="screenView"></div>
+        <div id="resultsView" style="display:none"></div>
+        <div id="payloadView" style="display:none"></div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const dayLabels = {
+      1: "א׳",
+      2: "ב׳",
+      3: "ג׳",
+      4: "ד׳",
+      5: "ה׳",
+      6: "ו׳",
+      7: "שבת",
+    };
+
+    const contactTypeMap = {
+      "01": { type: "phone", label: "טלפון", sortOrder: 1 },
+      "02": { type: "appointments", label: "זימון תורים", sortOrder: 2 },
+      "03": { type: "fax", label: "פקס", sortOrder: 3 },
+      "04": { type: "mobile", label: "נייד", sortOrder: 4 },
+      "05": { type: "email", label: "דוא״ל", sortOrder: 5 },
+    };
+
+    const scheduleTypeMap = {
+      1: { type: "reception", title: "שעות פעילות הרופא", sortOrder: 1 },
+      2: { type: "appointments", title: "זימון תורים", sortOrder: 2 },
+      5: { type: "additional", title: "נוסף", sortOrder: 3 },
+      14: { type: "phone", title: "שעות פעילות טלפונית", sortOrder: 4 },
+      15: { type: "teamReception", title: "קבלת קהל צוות", sortOrder: 5 },
+    };
+
+
+    const collapseConfig = {
+      availability: {
+        enabled: true,
+        previewRows: 3,
+        showDetailsInPreview: true,
+      },
+      contacts: {
+        enabled: true,
+        previewRows: 2,
+        showDetailsInPreview: true,
+      },
+      appointments: {
+        enabled: true,
+        previewRows: 1,
+        showDetailsInPreview: true,
+      },
+      locations: {
+        enabled: true,
+        previewRows: 1,
+        showDetailsInPreview: false,
+      },
+      services: {
+        enabled: true,
+        previewRows: 2,
+        showDetailsInPreview: false,
+      },
+      details: {
+        enabled: true,
+        previewRows: 1,
+        showDetailsInPreview: false,
+      },
+    };
+
+    const remarkMap = {
+      "0010": { type: "emergency", targetArea: "pageTop", displayStyle: "highlight", sortOrder: 1 },
+      "00010": { type: "emergency", targetArea: "pageTop", displayStyle: "highlight", sortOrder: 1 },
+      "10": { type: "emergency", targetArea: "pageTop", displayStyle: "highlight", sortOrder: 1 },
+      "0004": { type: "name", targetArea: "entity", displayStyle: "inline", sortOrder: 2 },
+      "0002": { type: "address", targetArea: "locations", displayStyle: "inline", sortOrder: 4 },
+      "0003": { type: "schedule", targetArea: "availability", displayStyle: "inline", sortOrder: 5 },
+      "0005": { type: "occupation", targetArea: "entity", displayStyle: "regular", sortOrder: 6 },
+      "0006": { type: "contact", targetArea: "contacts", displayStyle: "inline", sortOrder: 3 },
+      "0008": { type: "clinicServices", targetArea: "services", displayStyle: "regular", sortOrder: 7 },
+      "0020": { type: "additionalInfo", targetArea: "details", displayStyle: "regular", sortOrder: 8 },
+      "0001": { type: "additionalInfo", targetArea: "details", displayStyle: "regular", sortOrder: 8 },
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function escapeJsString(value) {
+      return String(value ?? "")
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'")
+        .replace(/\r/g, "\\r")
+        .replace(/\n/g, "\\n");
+    }
+
+    function normalizeArray(value) {
+      if (!value) return [];
+      return Array.isArray(value) ? value : [value];
+    }
+
+    function nonEmpty(value) {
+      return value !== undefined && value !== null && String(value).trim() !== "";
+    }
+
+    function mapEntityType(chapterCode) {
+      if (chapterCode === "001" || chapterCode === "01") return "doctor";
+      if (chapterCode === "003" || chapterCode === "03") return "therapist";
+      return "other";
+    }
+
+    function mapAvatarType(gender) {
+      if (gender === "אישה" || gender === "F" || gender === "female") return "female";
+      if (gender === "גבר" || gender === "M" || gender === "male") return "male";
+      return "default";
+    }
+
+    function valuesWithSort(values) {
+      return values.filter(nonEmpty).map((value, index) => ({ value, sortOrder: index + 1 }));
+    }
+
+    function buildSummaryAttributes(source) {
+      const attrs = [];
+
+      let specializationValues = normalizeArray(source.specialization_list)
+        .map((value) => String(value || "").trim())
+        .filter(Boolean);
+
+      if (!specializationValues.length && source.service_name_doc) {
+        specializationValues = [source.service_name_doc];
+      }
+
+      if (specializationValues.length) {
+        attrs.push({
+          type: "specialization",
+          label: "מומחיות",
+          sortOrder: 1,
+          values: valuesWithSort(specializationValues),
+        });
+      }
+
+      const professionalization = valuesWithSort(
+        normalizeArray(source.treat_area_list).map((x) => x && x.treat_area)
+      );
+
+      if (professionalization.length) {
+        attrs.push({
+          type: "professionalization",
+          label: "התמקצעות",
+          sortOrder: 2,
+          values: professionalization,
+        });
+      }
+
+      let languageValues = normalizeArray(source.languages)
+        .slice()
+        .sort((a, b) => Number((a && a.seqnr_languages) || 999) - Number((b && b.seqnr_languages) || 999))
+        .map((x) => x && x.language)
+        .filter(nonEmpty);
+
+      if (!languageValues.length && source.language_list) {
+        languageValues = String(source.language_list).split(",").map((x) => x.trim()).filter(Boolean);
+      }
+
+      if (languageValues.length) attrs.push({ type: "language", label: "שפות", sortOrder: 3, values: valuesWithSort(languageValues) });
+      if (source.city_name) attrs.push({ type: "city", label: null, sortOrder: 4, values: valuesWithSort([source.city_name]) });
+      return attrs.sort((a, b) => a.sortOrder - b.sortOrder);
+    }
+
+    function buildBadges(source) {
+      const badges = [];
+
+      if (source.noMember === true || source.no_member === true || source.no_member_icon === true || source.limited_memb_icon === true) {
+        badges.push({
+          type: "limitedMembership",
+          text: "לא מקבל חברים חדשים",
+          displayStyle: "info",
+          sortOrder: 1
+        });
+      }
+
+      const shabanType = Number(source.shaban_type);
+
+      if (shabanType === 1 || shabanType === 3) {
+        badges.push({
+          type: "shabanConsultation",
+          text: "ייעוץ בתשלום נוסף",
+          displayStyle: "paidService",
+          sortOrder: 2
+        });
+      }
+
+      if (shabanType === 2 || shabanType === 3) {
+        badges.push({
+          type: "shabanTreatments",
+          text: "ניתוחים וטיפולים בתשלום נוסף",
+          displayStyle: "paidService",
+          sortOrder: 3
+        });
+      }
+
+      return badges.sort((a, b) => a.sortOrder - b.sortOrder);
+    }
+
+    function buildRemarks(source) {
+      return normalizeArray(source.remarks)
+        .filter((r) => nonEmpty(r && r.remark_text))
+        .map((r, index) => {
+          const code = String(r.remark_message_type_code || "");
+          const config = remarkMap[code] || { type: "other", targetArea: "details", displayStyle: "regular", sortOrder: 999 };
+          const isVisible = code === "10" || code === "0010" || code === "00010";
+          return {
+            isVisible,
+            type: config.type,
+            sourceTypeCode: code,
+            targetArea: config.targetArea,
+            text: String(r.remark_text).trim(),
+            displayStyle: config.displayStyle,
+            severity: config.type === "emergency" ? "green" : null,
+            sortOrder: config.sortOrder * 1000 + Number(r.remark_seqnr || index + 1) * 10 + Number(r.remark_line_number || 1),
+          };
+        })
+        .sort((a, b) => a.sortOrder - b.sortOrder);
+    }
+
+    function buildContacts(source) {
+      const seenValues = new Set();
+      const grouped = new Map();
+
+      normalizeArray(source.contact)
+        .filter((c) => nonEmpty(c && c.contact_detail))
+        .map((c, index) => {
+          const normalizedCode = String(c.contact_code || "").padStart(2, "0");
+          const config = contactTypeMap[normalizedCode] || { type: "other", label: c.contact_desc || "אחר", sortOrder: 999 };
+          const value = String(c.contact_detail).trim();
+          return {
+            type: config.type,
+            sourceCode: normalizedCode,
+            label: c.contact_desc || config.label,
+            value,
+            groupSortOrder: config.sortOrder,
+            sourceSortOrder: index,
+          };
+        })
+        .sort((a, b) => a.groupSortOrder - b.groupSortOrder || a.sourceSortOrder - b.sourceSortOrder)
+        .forEach((item) => {
+          const dedupKey = `${item.type}:${item.value}`;
+          if (seenValues.has(dedupKey)) return;
+          seenValues.add(dedupKey);
+          if (!grouped.has(item.type)) {
+            grouped.set(item.type, {
+              type: item.type,
+              sourceCode: item.sourceCode,
+              label: item.label,
+              sortOrder: item.groupSortOrder,
+              values: [],
+            });
+          }
+          grouped.get(item.type).values.push({
+            value: item.value,
+            sortOrder: grouped.get(item.type).values.length + 1,
+          });
+        });
+
+      return Array.from(grouped.values()).sort((a, b) => a.sortOrder - b.sortOrder);
+    }
+
+    function buildScheduleGroups(source) {
+      const schedules = normalizeArray(source.schedule).filter((s) => s && s.schedule_type);
+      const groupMap = new Map();
+
+      schedules.forEach((s) => {
+        const config = scheduleTypeMap[s.schedule_type] || { type: "other", title: s.schedule_desc || "אחר", sortOrder: 999 };
+        if (!groupMap.has(config.type)) {
+          groupMap.set(config.type, { type: config.type, title: config.title, sortOrder: config.sortOrder, rawRows: [] });
+        }
+        groupMap.get(config.type).rawRows.push(s);
+      });
+
+      return Array.from(groupMap.values())
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map((group) => {
+          const days = Array.from({ length: 7 }, (_, i) => {
+            const dayCode = i + 1;
+            const dayRows = group.rawRows
+              .filter((r) => Number(r.availability_week_day) === dayCode)
+              .sort((a, b) => String(a.availability_start_time).localeCompare(String(b.availability_start_time)))
+              .map((r, rowIndex) => ({
+                startTime: r.availability_start_time || null,
+                endTime: r.availability_end_time || null,
+                hoursText: `${r.availability_start_time} עד ${r.availability_end_time}`,
+                notes: r.frequency_desc || null,
+                isClosed: false,
+                showDayLabel: rowIndex === 0,
+                availableMorning: Boolean(r.available_morning),
+                availableAfternoon: Boolean(r.available_afternoon),
+                availableEvening: Boolean(r.available_evening),
+                sortOrder: rowIndex + 1,
+              }));
+
+            return {
+              dayCode,
+              dayLabel: dayLabels[dayCode],
+              isVisible: dayRows.length > 0,
+              rows: dayRows.length ? dayRows : [],
+            };
+          });
+
+          return {
+            type: group.type,
+            title: group.title,
+            sortOrder: group.sortOrder,
+            days,
+            display: {
+              defaultOpen: group.type === "reception",
+              previewRows: null,
+              hasOverflow: false,
+            },
+          };
+        });
+    }
+
+    function buildServices(source) {
+      const services = normalizeArray(source.serv_treats).filter((s) => nonEmpty(s && s.cpt_code) || nonEmpty(s && s.sg_treat_name));
+      const groups = new Map();
+
+      services.forEach((s, index) => {
+        const groupCode = s.cpt_pubt || "00000";
+        if (!groups.has(groupCode)) groups.set(groupCode, { groupCode, title: s.cpt_pubt_name || "ללא קטגוריה", sortOrder: groups.size + 1, items: [] });
+        groups.get(groupCode).items.push({
+          code: s.cpt_code || null,
+          name: s.sg_treat_name || s.cell_treat_name || s.hebrew_text || s.hebrew_service_name || "",
+          coverageType: s.treat_is_personal === true ? "supplementary" : "basket",
+          coverageText: s.treat_is_personal === true ? "משלים" : "בסל",
+          locationName: null,
+          selfParticipationText: null,
+          selfParticipationUrl: null,
+          sortOrder: index + 1,
+        });
+      });
+
+      return Array.from(groups.values()).map((group) => {
+        const previewRows = collapseConfig.services.previewRows;
+        const hasOverflow = group.items.length > previewRows;
+        return {
+          ...group,
+          display: {
+            defaultOpen: !hasOverflow,
+            previewRows,
+            hasOverflow,
+          },
+        };
+      });
+    }
+
+    function buildDetails(source) {
+      const sections = [];
+      if (source.license_number) {
+        sections.push({ type: "license", title: "רישיון", sortOrder: 1, items: [{ label: "מספר רישיון", value: source.license_number, sortOrder: 1 }] });
+      }
+
+      normalizeArray(source.resume).forEach((r, index) => {
+        const items = [
+          { label: r.resume_title1, value: r.resume_title1_contents, sortOrder: 1 },
+          { label: r.resume_title2, value: r.resume_title2_contents, sortOrder: 2 },
+          { label: r.resume_title3, value: r.resume_title3_contents, sortOrder: 3 },
+        ].filter((item) => nonEmpty(item.label) && nonEmpty(item.value));
+
+        if (items.length) sections.push({ type: "resume", title: r.resume_topic || "פרטי השכלה ומומחיות", sortOrder: 10 + Number(r.resume_code || index + 1), items });
+      });
+
+      return sections.sort((a, b) => a.sortOrder - b.sortOrder);
+    }
+
+    function buildLocations(source, remarks) {
+      return [{
+        type: "primary",
+        city: source.city_name || null,
+        street: source.street_name || null,
+        streetCode: source.street_code || null,
+        houseNumber: source.house_number || null,
+        fullAddress: source.full_address || null,
+        navigationUrl: null,
+        accessibility: { isVisible: Boolean(source.accessibility_bool), text: source.accessibility_bool ? source.accessibility || "נגיש" : null },
+        messages: [],
+      }];
+    }
+
+    function parseSapDate(value) {
+      if (!value) return null;
+      const parts = String(value).split(".");
+      if (parts.length !== 3) return null;
+      const [day, month, year] = parts;
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
+
+    function formatDisplayDate(isoDate) {
+      if (!isoDate) return null;
+      const [year, month, day] = isoDate.split("-");
+      return `${day}/${month}/${year}`;
+    }
+
+    function mapReplacementEntity(substitute) {
+      if (!substitute) {
+        return {
+          isVisible: false,
+          entityType: null,
+          name: null,
+          profileUrl: null,
+          remark: null,
+        };
+      }
+
+      return {
+        isVisible: true,
+        entityType: substitute.sub_otype === "S" ? "doctor" : "other",
+        name: substitute.sub_name || null,
+        profileUrl: null,
+        remark: substitute.sub_remark || null,
+      };
+    }
+
+    function getGenderText(gender) {
+      const avatarType = mapAvatarType(gender);
+      if (avatarType === "female") {
+        return {
+          doctor: "הרופאה",
+          absentSingle: "לא נמצאת בתאריך:",
+          absentRange: "לא נמצאת בין התאריכים:",
+          replacement: "ממלאת מקום",
+        };
+      }
+
+      return {
+        doctor: "הרופא",
+        absentSingle: "לא נמצא בתאריך:",
+        absentRange: "לא נמצא בין התאריכים:",
+        replacement: "ממלא מקום",
+      };
+    }
+
+    function buildAbsenceDisplayText(item, gender) {
+      const genderText = getGenderText(gender);
+      const baseText = item.dateType === "single"
+        ? `${genderText.doctor} ${genderText.absentSingle} ${formatDisplayDate(item.startDate)}`
+        : `${genderText.doctor} ${genderText.absentRange} ${formatDisplayDate(item.startDate)} עד ${formatDisplayDate(item.endDate)}`;
+
+      if (item.replacementEntity && item.replacementEntity.isVisible && item.replacementEntity.name) {
+        return `${baseText}, ${genderText.replacement}: ${item.replacementEntity.name}${item.replacementEntity.remark ? ` ${item.replacementEntity.remark}` : ""}`;
+      }
+
+      return baseText;
+    }
+
+    function buildAbsences(source) {
+      const absences = normalizeArray(source.absence);
+      const substitutes = normalizeArray(source.subtitute || source.substitute);
+
+      const items = absences
+        .map((absence, index) => {
+          const startDate = parseSapDate(absence.absence_bdate);
+          const endDate = parseSapDate(absence.absence_edate);
+          if (!startDate || !endDate) return null;
+
+          const substitute = substitutes.find((sub) => {
+            return parseSapDate(sub.sub_bdate) === startDate && parseSapDate(sub.sub_edate) === endDate;
+          });
+
+          const dateType = startDate === endDate ? "single" : "range";
+          const displayDate = dateType === "single"
+            ? formatDisplayDate(startDate)
+            : `${formatDisplayDate(startDate)} - ${formatDisplayDate(endDate)}`;
+
+          return {
+            startDate,
+            endDate,
+            displayDate,
+            dateType,
+            displayText: null,
+            isDisplayed: false,
+            isToday: false,
+            reason: absence.absence_reason_dis === true ? absence.absence_reason || null : null,
+            replacementEntity: {
+              ...mapReplacementEntity(substitute),
+              id: substitute && (substitute.sub_entity_id || substitute.entity_id || substitute.sub_object_id || null),
+            },
+            sortOrder: index + 1,
+          };
+        })
+        .filter(Boolean)
+        .sort((a, b) => a.startDate.localeCompare(b.startDate));
+
+      if (items.length) {
+        items[0].isDisplayed = true;
+      }
+
+      const enrichedItems = items.map((item, index) => ({
+        ...item,
+        displayText: buildAbsenceDisplayText(item, source.service_provider_gender),
+        sortOrder: index + 1,
+      }));
+
+      return {
+        isVisible: enrichedItems.some((item) => item.isDisplayed),
+        items: enrichedItems,
+      };
+    }
+
+    function transformSourceToPayload(source) {
+      const remarks = buildRemarks(source);
+      const visibleRemarks = remarks.filter((r) => r.isVisible);
+      const contacts = buildContacts(source);
+      const services = buildServices(source);
+      const details = buildDetails(source);
+      const scheduleGroups = buildScheduleGroups(source);
+      const absences = buildAbsences(source);
+
+      return {
+        entity: {
+          isVisible: true,
+          entityType: mapEntityType(source.chapter_code),
+          id: source.entity_id || source.service_provider_id || source.object_id,
+          sourceType: source.chapter_code || null,
+          sourceCode: source.object_id || null,
+          name: source.service_provider_name || source.service_name || null,
+          displayName: source.service_provider_name || source.service_name || null,
+          subtitle: source.treat_area_string || null,
+          profileUrl: source.url || null,
+          image: { type: "avatar", gender: source.service_provider_gender || null, avatarType: mapAvatarType(source.service_provider_gender), url: null, alt: source.service_provider_name || source.service_name || "" },
+          summaryAttributes: buildSummaryAttributes(source),
+          badges: buildBadges(source),
+          accessibility: { isVisible: Boolean(source.accessibility_bool), text: source.accessibility_bool ? source.accessibility || "נגיש" : null },
+        },
+        remarks: { isVisible: visibleRemarks.length > 0, items: remarks },
+        availability: {
+          isVisible: scheduleGroups.length > 0 || absences.isVisible,
+          absences,
+          scheduleGroups,
+        },
+        contacts: { isVisible: contacts.length > 0, items: contacts, messages: contacts.some((c) => c.type === "email") ? [{ type: "emailDisclaimer", text: "לורום איפסום...", sortOrder: 1 }] : [] },
+        locations: { isVisible: true, items: buildLocations(source, remarks) },
+        services: { isVisible: services.length > 0, groups: services },
+        details: { isVisible: details.length > 0, sections: details },
+        relatedEntities: { isVisible: false, groups: [] },
+      };
+    }
+
+    const contentCatalog = {
+      specializations: { title: "מומחיות", key: "provider.specializations.title" },
+      professionalizations: { title: "התמקצעות", key: "provider.professionalizations.title" },
+      languages: { title: "שפות", key: "provider.languages.title" },
+      address: { title: "כתובת", key: "provider.address.title" },
+      facil: { title: "מתקנים", key: "provider.facil.title" },
+      absences: { title: "העדרויות וממלאי מקום", key: "provider.absences.title" },
+      schedule: { title: "שעות פעילות", key: "provider.schedule.title" },
+      services: { title: "ניתוחים וטיפולים", key: "provider.services.title" },
+      appointments: { title: "זימון תורים", key: "provider.appointments.title" },
+      contacts: { title: "אמצעי תקשורת", key: "provider.contacts.title" },
+      resume: { title: "פרטים נוספים", key: "provider.resume.sectionTitle" },
+      license: { title: "רישיון", key: "provider.resume.license.title", numberLabelKey: "provider.resume.license.numberLabel" },
+      serviceCoverageBasket: { key: "provider.services.coverage.basket" },
+      serviceCoverageSupplementary: { key: "provider.services.coverage.supplementary" },
+      emailDisclaimer: { key: "provider.contacts.emailDisclaimer" },
+      searchResult: { title: "תוצאות חיפוש", key: "provider.searchResult.title" },
+      detailsScreen: { title: "איתור שירות", key: "provider.details.screenTitle" },
+    };
+
+    function contentKeys(...keys) {
+      return keys.reduce((acc, key) => {
+        const item = contentCatalog[key];
+        if (item && item.key) acc.title = item.key;
+        return acc;
+      }, {});
+    }
+
+    function getSummaryAttributeValues(attrs, type) {
+      const attr = attrs.find((item) => item.type === type);
+      return attr
+        ? attr.values
+            .filter((item) => item && nonEmpty(item.value))
+            .map((item, index) => ({
+              value: item.value,
+              sortOrder: Number(item.sortOrder || index + 1),
+            }))
+        : [];
+    }
+
+    function buildTextListComponent(id, titleKey, values) {
+      return {
+        id,
+        title: contentCatalog[titleKey].title,
+        isVisible: values.length > 0,
+        contentKeys: { title: contentCatalog[titleKey].key },
+        values,
+      };
+    }
+
+    function buildAddressComponent(source) {
+      const displayAddress = source.full_address || [source.city_name, source.street_name, source.house_number].filter(Boolean).join(" ");
+      return {
+        id: "address",
+        title: contentCatalog.address.title,
+        isVisible: nonEmpty(displayAddress),
+        contentKeys: { title: contentCatalog.address.key },
+        city: source.city_name || null,
+        street: source.street_name || null,
+        streetCode: source.street_code || null,
+        houseNumber: source.house_number || null,
+        fullAddress: source.full_address || null,
+        displayAddress: displayAddress || null,
+        navigationUrl: null,
+        accessibility: { isVisible: Boolean(source.accessibility_bool), text: source.accessibility_bool ? source.accessibility || "נגיש" : null },
+        messages: [],
+      };
+    }
+
+    function buildIconsComponent(source, badges, address) {
+      const items = [];
+      if (source.accessibility_bool) {
+        items.push({
+          id: "accessibility",
+          type: "accessibility",
+          text: source.accessibility || "נגיש",
+          icon: "accessibility",
+          targetArea: "entityHeader",
+          severity: "positive",
+          source: "accessibility_bool",
+          sortOrder: 1,
+        });
+      }
+
+      badges.forEach((badge, index) => {
+        const iconByType = {
+          limitedMembership: "info",
+          shabanConsultation: "paidService",
+          shabanTreatments: "paidService",
+        };
+        items.push({
+          id: badge.type,
+          type: badge.type,
+          text: badge.text,
+          icon: iconByType[badge.type] || "info",
+          targetArea: "entityHeader",
+          severity: badge.type === "limitedMembership" ? "warning" : "info",
+          source: badge.type === "limitedMembership" ? "limited_memb_icon" : "shaban_type",
+          sortOrder: index + 2,
+        });
+      });
+
+      return {
+        id: "icons",
+        isVisible: items.length > 0,
+        items: items.sort((a, b) => a.sortOrder - b.sortOrder),
+      };
+    }
+
+    function buildAppointmentsComponent(badges) {
+      const limited = badges.find((badge) => badge.type === "limitedMembership");
+      const messages = limited ? [{
+        type: "limitedMembership",
+        text: limited.text,
+        sourceComponent: "icons",
+        sourceType: "limitedMembership",
+        sortOrder: 1,
+      }] : [];
+
+      return {
+        id: "appointments",
+        title: contentCatalog.appointments.title,
+        isVisible: messages.length > 0,
+        contentKeys: { title: contentCatalog.appointments.key },
+        messages,
+      };
+    }
+
+    function buildDayRangeLabel(days) {
+      if (!days.length) return "";
+      if (days.length === 1) return days[0].dayLabel;
+      return `${days[0].dayLabel}-${days[days.length - 1].dayLabel}`;
+    }
+
+    function scheduleDaySignature(day) {
+      return JSON.stringify((day.rows || []).map((row) => ({
+        startTime: row.startTime || null,
+        endTime: row.endTime || null,
+        hoursText: row.hoursText || null,
+        notes: row.notes || null,
+        isClosed: Boolean(row.isClosed),
+      })));
+    }
+
+    function buildDisplayDays(days) {
+      const visibleDays = (days || []).filter((day) => day.isVisible !== false && day.rows && day.rows.length);
+      const groups = [];
+
+      visibleDays.forEach((day) => {
+        const signature = scheduleDaySignature(day);
+        const last = groups[groups.length - 1];
+        const isConsecutive = last && last.days[last.days.length - 1].dayCode + 1 === day.dayCode;
+        if (last && last.signature === signature && isConsecutive) {
+          last.days.push(day);
+          return;
+        }
+        groups.push({ signature, days: [day] });
+      });
+
+      return groups.map((group, groupIndex) => {
+        const baseRows = group.days[0].rows || [];
+        return {
+          dayCodes: group.days.map((day) => day.dayCode),
+          dayLabel: buildDayRangeLabel(group.days),
+          isRange: group.days.length > 1,
+          rows: baseRows.map((row, rowIndex) => ({
+            ...row,
+            showDayLabel: rowIndex === 0,
+            sortOrder: rowIndex + 1,
+          })),
+          sortOrder: groupIndex + 1,
+        };
+      });
+    }
+
+    function buildScheduleComponent(scheduleGroups) {
+      return {
+        id: "schedule",
+        title: contentCatalog.schedule.title,
+        isVisible: scheduleGroups.length > 0,
+        contentKeys: { title: contentCatalog.schedule.key },
+        groups: scheduleGroups.map((group) => ({
+          ...group,
+          displayDays: buildDisplayDays(group.days),
+        })),
+      };
+    }
+
+    function buildAbsencesComponent(absences) {
+      return {
+        id: "absences",
+        title: contentCatalog.absences.title,
+        isVisible: Boolean(absences && absences.isVisible),
+        contentKeys: { title: contentCatalog.absences.key },
+        items: absences && absences.items ? absences.items : [],
+      };
+    }
+
+    function buildContactsComponent(contacts) {
+      const messages = contacts.some((c) => c.type === "email")
+        ? [{ type: "emailDisclaimer", text: "לורום איפסום...", contentKeys: { text: contentCatalog.emailDisclaimer.key }, sortOrder: 1 }]
+        : [];
+      return {
+        id: "contacts",
+        title: contentCatalog.contacts.title,
+        isVisible: contacts.length > 0,
+        contentKeys: { title: contentCatalog.contacts.key },
+        items: contacts,
+        messages,
+      };
+    }
+
+    function resolveContactPreferredAction(contactType, value, endpointKey) {
+      if ((endpointKey === "online" || endpointKey === "serviceGuide" || endpointKey === "mlh") && ["phone", "appointments", "mobile"].includes(contactType)) {
+        return { type: "copy", value };
+      }
+
+      if (["phone", "appointments", "mobile"].includes(contactType)) {
+        return { type: "tel", uri: `tel:${value}` };
+      }
+
+      if (contactType === "email") {
+        return { type: "mailto", uri: `mailto:${value}` };
+      }
+
+      return null;
+    }
+
+    function applyEndpointContactActions(contactsComponent, endpointKey) {
+      return {
+        ...contactsComponent,
+        items: (contactsComponent.items || []).map((contact) => ({
+          ...contact,
+          values: (contact.values || []).map((valueItem) => ({
+            ...valueItem,
+            preferredAction: resolveContactPreferredAction(contact.type, valueItem.value, endpointKey),
+          })),
+        })),
+      };
+    }
+
+    function buildServicesComponent(services) {
+      return {
+        id: "services",
+        title: contentCatalog.services.title,
+        isVisible: services.length > 0,
+        contentKeys: { title: contentCatalog.services.key },
+        groups: services.map((group) => ({
+          ...group,
+          contentSource: group.groupCode === "00000" ? "hardcodedFallback" : "originalJson",
+          items: group.items.map((item) => ({
+            ...item,
+            contentKeys: {
+              coverageText: item.coverageType === "supplementary"
+                ? contentCatalog.serviceCoverageSupplementary.key
+                : contentCatalog.serviceCoverageBasket.key,
+            },
+          })),
+        })),
+      };
+    }
+
+    function buildResumeComponent(detailsSections) {
+      return {
+        id: "resume",
+        title: contentCatalog.resume.title,
+        isVisible: detailsSections.length > 0,
+        contentKeys: { title: contentCatalog.resume.key },
+        sections: detailsSections.map((section) => {
+          if (section.type !== "license") return section;
+          return {
+            ...section,
+            title: contentCatalog.license.title,
+            contentKeys: { title: contentCatalog.license.key },
+            items: section.items.map((item) => ({
+              ...item,
+              contentKeys: item.label === "מספר רישיון" ? { label: contentCatalog.license.numberLabelKey } : {},
+            })),
+          };
+        }),
+      };
+    }
+
+    function buildFacilComponent(source) {
+      return {
+        id: "facil",
+        title: contentCatalog.facil.title,
+        isVisible: false,
+        contentKeys: { title: contentCatalog.facil.key },
+        items: [],
+      };
+    }
+
+    function transformSourceToUniversalPayload(source, context = {}) {
+      const summaryAttributes = buildSummaryAttributes(source);
+      const badges = buildBadges(source);
+      const remarks = buildRemarks(source);
+      const contacts = buildContacts(source);
+      const scheduleGroups = buildScheduleGroups(source);
+      const absences = buildAbsences(source);
+      const services = buildServices(source);
+      const resumeSections = buildDetails(source);
+      const address = buildAddressComponent(source);
+
+      const components = {
+        specializations: buildTextListComponent("specializations", "specializations", getSummaryAttributeValues(summaryAttributes, "specialization")),
+        professionalizations: buildTextListComponent("professionalizations", "professionalizations", getSummaryAttributeValues(summaryAttributes, "professionalization")),
+        languages: buildTextListComponent("languages", "languages", getSummaryAttributeValues(summaryAttributes, "language")),
+        address,
+        remarks: {
+          id: "remarks",
+          isVisible: remarks.some((r) => r.isVisible),
+          items: remarks,
+        },
+        icons: buildIconsComponent(source, badges, address),
+        facil: buildFacilComponent(source),
+        absences: buildAbsencesComponent(absences),
+        schedule: buildScheduleComponent(scheduleGroups),
+        services: buildServicesComponent(services),
+        appointments: buildAppointmentsComponent(badges),
+        contacts: applyEndpointContactActions(buildContactsComponent(contacts), context.endpointKey || "app"),
+        resume: buildResumeComponent(resumeSections),
+      };
+
+      return {
+        metadata: {
+          requestId: context.requestId || "simulator-request",
+          payloadVersion: "1.0",
+          schemaName: "UniversalProviderDisplayPayload",
+          schemaVersion: "1.0",
+          supportedEntityTypes: ["doctor"],
+          entityTypeVersions: { doctor: "1.0" },
+          generatedAt: new Date().toISOString(),
+          locale: { language: "he", country: "IL", direction: "rtl" },
+          client: {
+            clientType: context.clientType || "simulator",
+            platform: context.platform || "web",
+            channel: context.channel || "agentSimulator",
+          },
+          content: {
+            mode: "hardcoded",
+            provider: "agent",
+            futureProvider: "umbraco",
+            contentVersion: "hc-v1",
+          },
+          businessRules: {
+            rulesetVersion: "provider-search-v1",
+            source: "agent-hardcoded",
+            applied: true,
+          },
+          sourceData: {
+            sourceSystem: "serviceGuide",
+            sourcePayloadType: "originalJson",
+            transformationVersion: "universal-provider-payload-v1",
+          },
+        },
+        entity: {
+          isVisible: true,
+          entityType: mapEntityType(source.chapter_code),
+          id: source.entity_id || source.service_provider_id || source.object_id,
+          sourceType: source.chapter_code || null,
+          sourceCode: source.object_id || null,
+          name: source.service_name || null,
+          displayName: source.service_provider_name || source.service_name || null,
+          subtitle: source.treat_area_string || null,
+          profileUrl: source.url || null,
+          image: {
+            type: "avatar",
+            gender: source.service_provider_gender || null,
+            avatarType: mapAvatarType(source.service_provider_gender),
+            url: null,
+            alt: source.service_provider_name || source.service_name || "",
+          },
+        },
+        presentation: {
+          entityType: mapEntityType(source.chapter_code),
+          searchResult: {
+            title: contentCatalog.searchResult.title,
+            contentKeys: { title: contentCatalog.searchResult.key },
+            componentIds: ["entity", "specializations", "professionalizations", "languages", "remarks", "icons", "address", "absences"],
+          },
+          details: {
+            title: contentCatalog.detailsScreen.title,
+            contentKeys: { title: contentCatalog.detailsScreen.key },
+            layoutPolicy: "clientManaged",
+            availableComponentIds: ["remarks", "entity", "specializations", "professionalizations", "languages", "icons", "absences", "schedule", "address", "facil", "services", "appointments", "contacts", "resume"],
+          },
+        },
+        components,
+      };
+    }
+
+    function buildUniversalResponse(sources, context = {}) {
+      const transformedPayloads = sources.map((source) => transformSourceToUniversalPayload(source, context));
+      const firstMetadata = transformedPayloads[0] && transformedPayloads[0].metadata;
+      const metadata = firstMetadata || transformSourceToUniversalPayload({}, context).metadata;
+
+      return {
+        metadata,
+        results: transformedPayloads.map(({ metadata: _metadata, ...result }) => result),
+      };
+    }
+
+    function extractHits(input) {
+      if (!input) return [];
+      if (Array.isArray(input)) return input;
+      const hits = input && input.data && input.data.service_guide && input.data.service_guide.hits;
+      if (Array.isArray(hits)) return hits.map((h) => h.source || h);
+      if (input.source) return [input.source];
+      return [input];
+    }
+
+    function assertEqual(name, actual, expected) {
+      const pass = JSON.stringify(actual) === JSON.stringify(expected);
+      return { name, pass, actual, expected };
+    }
+
+    function runTransformTests() {
+      const source = {
+        chapter_code: "001",
+        service_provider_name: "דר בדיקה",
+        object_id: "1",
+        service_provider_gender: "אישה",
+        accessibility_bool: true,
+        accessibility: "נגיש",
+        shaban_ind: false,
+        shaban_type: 2,
+        limited_memb_icon: false,
+        contact: [
+          { contact_code: "03", contact_detail: "111", contact_desc: "פקס" },
+          { contact_code: "01", contact_detail: "222", contact_desc: "טלפון" },
+          { contact_code: "05", contact_detail: "a@b.com", contact_desc: "דוא״ל" },
+        ],
+        languages: [
+          { language: "אנגלית", seqnr_languages: "002" },
+          { language: "עברית", seqnr_languages: "001" },
+        ],
+        remarks: [{ remark_message_type_code: "0004", remark_text: "יש לתאם תור", remark_line_number: 1, remark_seqnr: 1 }],
+        absence: [
+          { absence_bdate: "05.06.2026", absence_edate: "05.06.2026", absence_reason_dis: false, absence_reason: "חופשה" },
+        ],
+        subtitute: [
+          { sub_bdate: "05.06.2026", sub_edate: "05.06.2026", sub_name: "דר גואברה מואיד", sub_otype: "S", sub_remark: "דר גואברה מואיד במרפאת הרופא/ה הנעדר/ת" },
+        ],
+        schedule: [
+          { schedule_type: 1, schedule_desc: "קבלת קהל", availability_week_day: 2, availability_start_time: "12:30", availability_end_time: "14:00" },
+          { schedule_type: 1, schedule_desc: "קבלת קהל", availability_week_day: 2, availability_start_time: "10:00", availability_end_time: "12:00" },
+        ],
+      };
+
+      const payload = transformSourceToPayload(source);
+      const languageAttr = payload.entity.summaryAttributes.find((x) => x.type === "language");
+
+      const absencePayload = transformSourceToPayload({
+        chapter_code: "001",
+        service_provider_name: "דר היעדרות",
+        absence: [{ absence_bdate: "05.06.2026", absence_edate: "05.06.2026", absence_reason_dis: false, absence_reason: "חופשה" }],
+        subtitute: [{ sub_bdate: "05.06.2026", sub_edate: "05.06.2026", sub_name: "דר מחליף", sub_otype: "S", sub_remark: "במרפאת הרופא" }],
+      });
+
+      const shabanType3Payload = transformSourceToPayload({
+        chapter_code: "001",
+        service_provider_name: "דר שב״ן",
+        shaban_ind: false,
+        shaban_type: 3,
+      });
+
+      const displaySchedulePayload = transformSourceToPayload({
+        chapter_code: "001",
+        service_provider_name: "דר תצוגה",
+        schedule: [
+          { schedule_type: 1, schedule_desc: "קבלת קהל", availability_week_day: 1, availability_start_time: "08:00", availability_end_time: "10:00" },
+          { schedule_type: 2, schedule_desc: "זימון תורים", availability_week_day: 1, availability_start_time: "10:00", availability_end_time: "11:00" },
+        ],
+      });
+
+      const displayServicesTwoPayload = transformSourceToPayload({
+        chapter_code: "001",
+        service_provider_name: "דר טיפולים",
+        serv_treats: [
+          { cpt_pubt: "90", cpt_pubt_name: "קבוצה", cpt_code: "1", sg_treat_name: "טיפול 1", treat_is_personal: false },
+          { cpt_pubt: "90", cpt_pubt_name: "קבוצה", cpt_code: "2", sg_treat_name: "טיפול 2", treat_is_personal: false },
+        ],
+      });
+
+      const displayServicesThreePayload = transformSourceToPayload({
+        chapter_code: "001",
+        service_provider_name: "דר טיפולים",
+        serv_treats: [
+          { cpt_pubt: "90", cpt_pubt_name: "קבוצה", cpt_code: "1", sg_treat_name: "טיפול 1", treat_is_personal: false },
+          { cpt_pubt: "90", cpt_pubt_name: "קבוצה", cpt_code: "2", sg_treat_name: "טיפול 2", treat_is_personal: false },
+          { cpt_pubt: "90", cpt_pubt_name: "קבוצה", cpt_code: "3", sg_treat_name: "טיפול 3", treat_is_personal: false },
+        ],
+      });
+
+      return [
+        assertEqual("chapter_code 001 ממופה לרופא", payload.entity.entityType, "doctor"),
+        assertEqual("0004 ממופה לסוג name", payload.remarks.items[0] && payload.remarks.items[0].type, "name"),
+        assertEqual("shaban_type 2 יוצר תגית ניתוחים וטיפולים גם כש shaban_ind=false", payload.entity.badges.map((x) => x.type), ["shabanTreatments"]),
+        assertEqual("shaban_type 3 יוצר את שתי תגיות שב״ן גם כש shaban_ind=false", shabanType3Payload.entity.badges.map((x) => x.type), ["shabanConsultation", "shabanTreatments"]),
+        assertEqual("אמצעי קשר ממוינים לפי קוד עסקי", payload.contacts.items.map((x) => x.type), ["phone", "fax", "email"]),
+        assertEqual("שפות ממוינות לפי seqnr_languages", languageAttr && languageAttr.values.map((x) => x.value), ["עברית", "אנגלית"]),
+        assertEqual("שורות שעות ממוינות לפי שעת התחלה", payload.availability.scheduleGroups[0] && payload.availability.scheduleGroups[0].days[1].rows.map((x) => x.startTime), ["10:00", "12:30"]),
+        assertEqual("דוא״ל יוצר הודעת לורום איפסום", payload.contacts.messages[0] && payload.contacts.messages[0].text, "לורום איפסום..."),
+        assertEqual("absence יוצר אובייקט היעדרות לפי absence[]", absencePayload.availability.absences.isVisible, true),
+        assertEqual("מחליף משויך לפי אותם תאריכים", absencePayload.availability.absences.items[0].replacementEntity.name, "דר מחליף"),
+        assertEqual("schedule_type 1 פתוח כברירת מחדל ב-payload", displaySchedulePayload.availability.scheduleGroups.find((g) => g.type === "reception").display.defaultOpen, true),
+        assertEqual("schedule_type 2 סגור כברירת מחדל ב-payload", displaySchedulePayload.availability.scheduleGroups.find((g) => g.type === "appointments").display.defaultOpen, false),
+        assertEqual("services עם 2 פריטים פתוחים ללא overflow", displayServicesTwoPayload.services.groups[0].display, { defaultOpen: true, previewRows: 2, hasOverflow: false }),
+        assertEqual("services עם 3 פריטים סגורים עם previewRows", displayServicesThreePayload.services.groups[0].display, { defaultOpen: false, previewRows: 2, hasOverflow: true }),
+      ];
+    }
+
+    const sampleJson = JSON.stringify({
+      data: { service_guide: { hits: [{ source: {
+        service_provider_name: "דר אלישבע טובעלם",
+        service_name_doc: "מומחית ברפואת המשפחה",
+        treat_area_string: "משפחה, פנימית וכללית",
+        chapter_code: "001",
+        object_id: "70068432",
+        entity_id: "S7006843290019453001001",
+        url: "https://serguide.maccabi4u.co.il/heb/doctors/",
+        service_provider_gender: "אישה",
+        specialization_list: ["משפחה,פנימית וכללית"],
+        treat_area_list: [{ treat_area: "משפחה, פנימית וכללית" }],
+        languages: [
+          { language: "עברית", seqnr_languages: "001" },
+          { language: "צרפתית", seqnr_languages: "002" },
+          { language: "אנגלית", seqnr_languages: "003" },
+        ],
+        city_name: "ירושלים",
+        accessibility_bool: true,
+        accessibility: "נגיש",
+        full_address: "ירושלים הרב עוזיאל 98",
+        street_name: "הרב עוזיאל",
+        street_code: "3996",
+        house_number: "98",
+        contact: [{ contact_code: "02", contact_desc: "זימון תורים", contact_detail: "*3555" }],
+        schedule: [{ schedule_type: 1, schedule_desc: "קבלת קהל", availability_week_day: 1, availability_start_time: "08:30", availability_end_time: "12:30", frequency_desc: "שבועית", available_morning: true, available_afternoon: true, available_evening: false }],
+        remarks: [{ remark_message_type_code: "0004", remark_text: "יש לתאם תור", remark_line_number: 1, remark_seqnr: 1 }],
+        license_number: "1-84096",
+      }}] } }
+    }, null, 2);
+
+    const endpointClientMap = {
+      app: {
+        label: "אפליקציה",
+        clientType: "mobile",
+        platform: "app",
+        channel: "memberApp",
+      },
+      online: {
+        label: "אונליין",
+        clientType: "web",
+        platform: "web",
+        channel: "online",
+      },
+      mlh: {
+        label: "מל\"ה",
+        clientType: "internalSystem",
+        platform: "web",
+        channel: "mlh",
+      },
+      serviceGuide: {
+        label: "מדריך השירותים",
+        clientType: "web",
+        platform: "web",
+        channel: "serviceGuide",
+      },
+    };
+
+    let state = { response: { metadata: null, results: [] }, payloads: [], selectedIndex: 0, activeTab: "screen" };
+
+    const input = document.getElementById("jsonInput");
+    const endpointType = document.getElementById("endpointType");
+    const errorBox = document.getElementById("jsonError");
+    const statusBox = document.getElementById("jsonStatus");
+    const endpointStatusBox = document.getElementById("endpointStatus");
+    const screenView = document.getElementById("screenView");
+    const resultsView = document.getElementById("resultsView");
+    const payloadView = document.getElementById("payloadView");
+    const switcher = document.getElementById("entitySwitcher");
+    const testResults = document.getElementById("testResults");
+
+    function renderTests() {
+      testResults.innerHTML = runTransformTests().map((test) => `
+        <div class="${test.pass ? "test-pass" : "test-fail"}">
+          ${test.pass ? "✓" : "✗"} ${escapeHtml(test.name)}
+          ${test.pass ? "" : `<div dir="ltr">expected: ${escapeHtml(JSON.stringify(test.expected))} | actual: ${escapeHtml(JSON.stringify(test.actual))}</div>`}
+        </div>
+      `).join("");
+    }
+
+    function getAttributeValues(payload, type) {
+      const attr = payload.entity.summaryAttributes.find((item) => item.type === type);
+      return attr ? attr.values.map((value) => value.value).filter(nonEmpty) : [];
+    }
+
+    function renderMetaLine(label, values) {
+      const text = values.filter(nonEmpty).join(", ");
+      return text ? `<b>${escapeHtml(label)}:</b> ${escapeHtml(text)}<br>` : "";
+    }
+
+    function renderProviderCard(title, content) {
+      if (!content) return "";
+      return `
+        <div class="provider-card">
+          <h2 class="provider-section-title">${escapeHtml(title)}</h2>
+          ${content}
+        </div>
+      `;
+    }
+
+    function renderHeader(payload) {
+      const e = payload.entity;
+      const specializations = getAttributeValues(payload, "specialization");
+      const professionalization = getAttributeValues(payload, "professionalization");
+      const languages = getAttributeValues(payload, "language");
+      const cities = getAttributeValues(payload, "city");
+      const limited = e.badges.filter((badge) => badge.type === "limitedMembership");
+      const shaban = e.badges.filter((badge) => badge.type !== "limitedMembership");
+
+      return `
+        <div class="provider-card">
+          <div class="doctor-hero">
+            <div class="doctor-avatar">דר</div>
+            <div>
+              <div class="doctor-name">${escapeHtml(e.displayName || "")}</div>
+              <div class="doctor-meta">
+                ${renderMetaLine("מומחיות", specializations)}
+                ${renderMetaLine("התמקצעות", professionalization)}
+                ${renderMetaLine("שפות", languages)}
+                ${e.subtitle ? `<span>${escapeHtml(e.subtitle)}</span><br>` : ""}
+                ${cities.length ? `<span>${escapeHtml(cities.join(", "))}</span>` : ""}
+              </div>
+            </div>
+          </div>
+          <div class="provider-chips">
+            ${e.accessibility.isVisible ? `<span class="provider-chip green" title="${escapeHtml(e.accessibility.text || "נגיש")}">♿ ${escapeHtml(e.accessibility.text || "נגיש")}</span>` : ""}
+            ${limited.map((badge) => `<span class="provider-chip red">${escapeHtml(badge.text)}</span>`).join("")}
+            ${shaban.map((badge) => `<span class="provider-chip blue">שב&quot;ן ${escapeHtml(badge.text)}</span>`).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderRemarks(payload) {
+      const items = payload.remarks.items.filter((r) => r.isVisible && r.targetArea !== "locations");
+      return items.map((r) => `
+        <div class="provider-notice">
+          <div class="provider-icon-dot">i</div>
+          <div>${escapeHtml(r.text)}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderSection(title, content) {
+      return renderProviderCard(title, content);
+    }
+
+    function renderAccordion(title, fullContent, display = {}, previewContent = null) {
+      const id = `section_${Math.random().toString(36).slice(2)}`;
+      const isOpen = display.defaultOpen !== false;
+      const hasPreview = previewContent !== null && previewContent !== fullContent;
+
+      return `
+        <div class="provider-accordion" data-section-id="${id}">
+          <button class="provider-accordion-head" type="button" onclick="toggleSection('${id}')">
+            <span>${escapeHtml(title || "")}</span>
+            <span class="chevron">${isOpen ? "⌃" : "⌄"}</span>
+          </button>
+          ${hasPreview ? `<div class="section-preview provider-accordion-body" style="display:${isOpen ? "none" : "block"}">${previewContent}</div>` : ""}
+          <div class="section-content provider-accordion-body" style="display:${isOpen ? "block" : "none"}">${fullContent}</div>
+        </div>
+      `;
+    }
+
+
+    window.handleEmailClick = async function(email) {
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        window.location.href = `mailto:${email}`;
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(email);
+        window.alert("כתובת המייל הועתקה");
+      } catch (error) {
+        window.location.href = `mailto:${email}`;
+      }
+    };
+
+    window.copyContactValue = async function(value) {
+      try {
+        await navigator.clipboard.writeText(value);
+        window.alert("הערך הועתק");
+      } catch (error) {
+        window.alert("לא ניתן להעתיק את הערך");
+      }
+    };
+
+    window.toggleSection = function(id) {
+      const section = document.querySelector(`[data-section-id="${id}"]`);
+      if (!section) return;
+      const content = section.querySelector(".section-content");
+      const preview = section.querySelector(".section-preview");
+      const chevron = section.querySelector(".chevron");
+      if (!content || !chevron) return;
+      const isOpen = content.style.display !== "none";
+      content.style.display = isOpen ? "none" : "block";
+      if (preview) preview.style.display = isOpen ? "block" : "none";
+      chevron.textContent = isOpen ? "⌄" : "⌃";
+    };
+
+    window.toggleMappingTests = function() {
+      const body = document.getElementById("mappingTestsBody");
+      const chevron = document.getElementById("mappingTestsChevron");
+      if (!body || !chevron) return;
+      const isOpen = body.style.display !== "none";
+      body.style.display = isOpen ? "none" : "block";
+      chevron.textContent = isOpen ? "⌄" : "⌃";
+    };
+
+
+    function renderAbsences(payload) {
+      const absences = payload.availability.absences;
+      if (!absences || !absences.isVisible) return "";
+      const displayedAbsences = absences.items.filter((item) => item.isDisplayed);
+      if (!displayedAbsences.length) return "";
+
+      return displayedAbsences.map((item) => `
+        <div class="absence-item">
+          <span class="warn-icon">!</span>
+          <div>
+            ${escapeHtml(item.displayText)}
+            ${item.reason ? `, ${escapeHtml(item.reason)}` : ""}
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderScheduleOnly(payload) {
+      const groups = payload.availability.scheduleGroups;
+      if (!groups.length) return "";
+
+      return groups.map((g) => {
+        const daysForDisplay = g.displayDays || g.days || [];
+        const table = `
+          <table class="provider-table">
+            <thead>
+              <tr>
+                <th>יום</th>
+                <th>שעה</th>
+                <th>הערה</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${daysForDisplay.filter((d) => d.isVisible !== false).flatMap((day) => day.rows.map((row, index) => `
+                <tr class="${index === 0 ? "day-break" : ""}">
+                  <td>${row.showDayLabel ? escapeHtml(day.dayLabel) : ""}</td>
+                  <td class="${row.isClosed ? "closed" : ""}">${escapeHtml(row.hoursText)}</td>
+                  <td>${escapeHtml(row.notes || "")}</td>
+                </tr>
+              `)).join("")}
+            </tbody>
+          </table>
+        `;
+        return renderAccordion(g.title, table, g.display || { defaultOpen: true });
+      }).join("");
+    }
+
+    function renderContacts(payload) {
+      if (!payload.contacts.items.length) return "";
+      return `
+        ${payload.contacts.items.map((c) => `
+          <div class="contact-row">
+            <div class="contact-label">${escapeHtml(c.label)}</div>
+            <div class="contact-values">
+              ${(c.values || []).map((v) => {
+                if (v.preferredAction && v.preferredAction.type === "mailto") {
+                  return `<div class="contact-value-item"><button type="button" class="button small contact-value" style="border:0;padding:0;background:transparent;text-decoration:underline;" onclick="handleEmailClick('${escapeHtml(escapeJsString(v.value))}')">${escapeHtml(v.value)}</button></div>`;
+                }
+                if (v.preferredAction && v.preferredAction.type === "copy") {
+                  return `<div class="contact-value-item"><button type="button" class="button small contact-value" style="border:0;padding:0;background:transparent;text-decoration:underline;" onclick="copyContactValue('${escapeHtml(escapeJsString(v.value))}')">${escapeHtml(v.value)}</button></div>`;
+                }
+                if (v.preferredAction && v.preferredAction.type === "tel") {
+                  return `<div class="contact-value-item"><a class="contact-value" href="${escapeHtml(v.preferredAction.uri)}">${escapeHtml(v.value)}</a></div>`;
+                }
+                return `<div class="contact-value-item contact-value">${escapeHtml(v.value)}</div>`;
+              }).join("")}
+            </div>
+          </div>
+        `).join("")}
+        ${payload.contacts.messages.map((m) => `<div class="provider-notice"><div class="provider-icon-dot">i</div><div>${escapeHtml(m.text)}</div></div>`).join("")}
+      `;
+    }
+
+    function renderLocations(payload) {
+      const locations = payload.locations.items
+        .map((loc) => ({ ...loc, displayAddress: loc.fullAddress || [loc.city, loc.street, loc.houseNumber].filter(Boolean).join(" ") }))
+        .filter((loc) => nonEmpty(loc.displayAddress));
+
+      return locations.map((loc) => `
+        <div>
+          <a href="${escapeHtml(loc.navigationUrl || "#")}">${escapeHtml(loc.displayAddress)}</a>
+          ${loc.accessibility.isVisible ? `<div class="provider-notice" style="margin-top:12px"><div class="provider-icon-dot">i</div><div>${escapeHtml(loc.accessibility.text)}</div></div>` : ""}
+          ${loc.messages.map((m) => `<div class="provider-notice"><div class="provider-icon-dot">i</div><div>${escapeHtml(m.text)}</div></div>`).join("")}
+        </div>
+      `).join("");
+    }
+
+    function renderServices(payload) {
+      if (!payload.services.groups.length) return "";
+      const renderServiceRows = (items) => items.map((item) => `
+        <div class="treat-row">
+          <div>${escapeHtml(item.name)}</div>
+          <div class="coverage-badge ${escapeHtml(item.coverageType || "unknown")}">${escapeHtml(item.coverageText || "")}</div>
+        </div>
+      `).join("");
+
+      return payload.services.groups.map((g) => {
+        const display = g.display || { defaultOpen: true, previewRows: g.items.length, hasOverflow: false };
+        const fullContent = renderServiceRows(g.items);
+        const previewItems = display.hasOverflow ? g.items.slice(0, display.previewRows) : g.items;
+        const previewContent = display.hasOverflow ? renderServiceRows(previewItems) : null;
+        return renderAccordion(g.title || "", fullContent, display, previewContent);
+      }).join("");
+    }
+
+    function renderAppointments(payload) {
+      const limited = payload.entity.badges.find((badge) => badge.type === "limitedMembership");
+      return limited ? `<div class="provider-notice"><div class="provider-icon-dot">i</div><div>${escapeHtml(limited.text)}</div></div>` : "";
+    }
+
+    function renderDetails(payload) {
+      if (!payload.details.sections.length) return "";
+      return payload.details.sections.map((section) => `
+        <div class="kv">
+          <b>${escapeHtml(section.title)}</b>
+          ${section.items.map((item) => `
+            <div>
+              ${item.label ? `<span class="muted">${escapeHtml(item.label)}:</span> ` : ""}
+              ${escapeHtml(item.value)}
+            </div>
+          `).join("")}
+        </div>
+      `).join("");
+    }
+
+    function renderSearchResult(payload, index) {
+      const e = payload.entity;
+      const specializations = getAttributeValues(payload, "specialization");
+      const professionalization = getAttributeValues(payload, "professionalization");
+      const languages = getAttributeValues(payload, "language");
+      const firstAbsence = payload.availability.absences && payload.availability.absences.isVisible
+        ? payload.availability.absences.items.find((item) => item.isDisplayed)
+        : null;
+      const location = payload.locations.items.find((loc) => nonEmpty(loc.city));
+      const cityValues = getAttributeValues(payload, "city");
+      const city = (location && location.city) || cityValues[0] || "";
+      const emergencyRemarks = payload.remarks.items.filter((remark) =>
+        remark.isVisible &&
+        remark.type === "emergency" &&
+        remark.targetArea === "pageTop" &&
+        nonEmpty(remark.text)
+      );
+      const badges = payload.entity.badges || [];
+      const accessibility = payload.entity.accessibility;
+
+      return `
+        <article class="search-result-card">
+          <div class="search-result-hero">
+            <div>
+              <button type="button" class="button small search-result-name" style="border:0;background:transparent;padding:0" onclick="openEntityDetails(${index})">${escapeHtml(e.displayName || "")}</button>
+              <div class="search-result-meta">
+                ${specializations.length ? `${escapeHtml(specializations.join(", "))}<br>` : ""}
+                ${renderMetaLine("התמקצעות", professionalization)}
+                ${renderMetaLine("שפות", languages)}
+              </div>
+              ${firstAbsence ? `
+                <div class="search-result-warning">
+                  <span class="warn-icon">!</span>
+                  <span>${escapeHtml(firstAbsence.displayText)}${firstAbsence.reason ? `, ${escapeHtml(firstAbsence.reason)}` : ""}</span>
+                </div>
+              ` : ""}
+            </div>
+            <div class="search-result-avatar">דר</div>
+          </div>
+          <div class="search-result-footer">
+            ${accessibility.isVisible ? `<span class="search-result-chip green" title="${escapeHtml(accessibility.text || "נגיש")}">♿ ${escapeHtml(accessibility.text || "נגיש")}</span>` : ""}
+            ${badges.map((badge) => `<span class="search-result-chip">${escapeHtml(badge.text || "")}</span>`).join("")}
+            ${city ? `<span class="search-result-location">⌖ ${escapeHtml(city)}</span>` : ""}
+            ${emergencyRemarks.map((remark) => `<span class="search-result-message">✓ ${escapeHtml(remark.text)}</span>`).join("")}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderSearchResults(payloads) {
+      if (!payloads.length) return `<div class="provider-empty">אין תוצאות להצגה</div>`;
+      return `
+        <div class="search-results-screen">
+          ${payloads.map((payload, index) => renderSearchResult(payload, index)).join("")}
+        </div>
+      `;
+    }
+
+    function renderScreen(payload) {
+      if (!payload) return `<div class="provider-empty">אין payload להצגה</div>`;
+      const topParts = [`<h2 class="service-screen-title">${escapeHtml((payload.presentation && payload.presentation.details && payload.presentation.details.title) || "")}</h2>`];
+      const mainParts = [];
+      const sideParts = [];
+      const appointmentContent = renderAppointments(payload);
+
+      if (payload.remarks.isVisible) topParts.push(renderRemarks(payload));
+      topParts.push(renderHeader(payload));
+
+      if (payload.availability.absences && payload.availability.absences.isVisible) mainParts.push(renderSection("העדרויות וממלאי מקום", renderAbsences(payload)));
+      if (payload.availability.scheduleGroups.length) mainParts.push(renderSection("שעות פעילות", renderScheduleOnly(payload)));
+      if (payload.locations.isVisible) mainParts.push(renderSection("כתובת", renderLocations(payload)));
+      if (payload.services.isVisible) mainParts.push(renderSection("ניתוחים וטיפולים", renderServices(payload)));
+      if (payload.details.isVisible) mainParts.push(renderSection("פרטים נוספים", renderDetails(payload)));
+
+      if (appointmentContent) sideParts.push(renderSection("זימון תורים", appointmentContent));
+      if (payload.contacts.isVisible) sideParts.push(renderSection("אמצעי תקשורת", renderContacts(payload)));
+
+      return `
+        <div class="provider-screen service-screen">
+          ${topParts.filter(Boolean).join("")}
+          <div class="service-layout ${sideParts.length ? "" : "single"}">
+            <div class="service-main-column">${mainParts.filter(Boolean).join("")}</div>
+            ${sideParts.length ? `<div class="service-side-column">${sideParts.filter(Boolean).join("")}</div>` : ""}
+          </div>
+        </div>
+      `;
+    }
+    function componentValues(component) {
+      if (!component || !Array.isArray(component.values)) return [];
+      return component.values
+        .map((item) => (item && typeof item === "object" ? item.value : item))
+        .filter(nonEmpty);
+    }
+
+    function getComponent(payload, id) {
+      return payload && payload.components ? payload.components[id] : null;
+    }
+
+    function renderHeader(payload) {
+      const e = payload.entity || {};
+      const specializations = componentValues(getComponent(payload, "specializations"));
+      const professionalizations = componentValues(getComponent(payload, "professionalizations"));
+      const languages = componentValues(getComponent(payload, "languages"));
+      const address = getComponent(payload, "address") || {};
+      const icons = (getComponent(payload, "icons") || { items: [] }).items || [];
+      const accessibility = icons.filter((icon) => icon.type === "accessibility");
+      const limited = icons.filter((icon) => icon.type === "limitedMembership");
+      const shaban = icons.filter((icon) => icon.type && icon.type.indexOf("shaban") === 0);
+
+      return `
+        <div class="provider-card">
+          <div class="doctor-hero">
+            <div class="doctor-avatar">דר</div>
+            <div>
+              <div class="doctor-name">${escapeHtml(e.displayName || "")}</div>
+              <div class="doctor-meta">
+                ${renderMetaLine((getComponent(payload, "specializations") || {}).title || "מומחיות", specializations)}
+                ${renderMetaLine((getComponent(payload, "professionalizations") || {}).title || "התמקצעות", professionalizations)}
+                ${renderMetaLine((getComponent(payload, "languages") || {}).title || "שפות", languages)}
+                ${e.subtitle ? `<span>${escapeHtml(e.subtitle)}</span><br>` : ""}
+                ${address.city ? `<span>${escapeHtml(address.city)}</span>` : ""}
+              </div>
+            </div>
+          </div>
+          <div class="provider-chips">
+            ${accessibility.map((icon) => `<span class="provider-chip green" title="${escapeHtml(icon.text || "נגיש")}">♿ ${escapeHtml(icon.text || "נגיש")}</span>`).join("")}
+            ${limited.map((icon) => `<span class="provider-chip red">${escapeHtml(icon.text)}</span>`).join("")}
+            ${shaban.map((icon) => `<span class="provider-chip blue">שב&quot;ן ${escapeHtml(icon.text)}</span>`).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderRemarks(payload) {
+      const remarks = getComponent(payload, "remarks");
+      const items = remarks && remarks.items ? remarks.items.filter((r) => r.isVisible && r.targetArea !== "locations") : [];
+      return items.map((r) => `
+        <div class="provider-notice">
+          <div class="provider-icon-dot">i</div>
+          <div>${escapeHtml(r.text)}</div>
+        </div>
+      `).join("");
+    }
+
+    function renderAbsences(payload) {
+      const absences = getComponent(payload, "absences");
+      if (!absences || !absences.isVisible) return "";
+      const displayedAbsences = (absences.items || []).filter((item) => item.isDisplayed);
+      if (!displayedAbsences.length) return "";
+
+      return displayedAbsences.map((item) => `
+        <div class="absence-item">
+          <span class="warn-icon">!</span>
+          <div>
+            ${escapeHtml(item.displayText)}
+            ${item.reason ? `, ${escapeHtml(item.reason)}` : ""}
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderScheduleOnly(payload) {
+      const schedule = getComponent(payload, "schedule");
+      const groups = schedule && schedule.groups ? schedule.groups : [];
+      if (!groups.length) return "";
+
+      return groups.map((g) => {
+        const daysForDisplay = g.displayDays || g.days || [];
+        const table = `
+          <table class="provider-table">
+            <thead>
+              <tr>
+                <th>יום</th>
+                <th>שעה</th>
+                <th>הערה</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${daysForDisplay.filter((d) => d.isVisible !== false).flatMap((day) => day.rows.map((row, index) => `
+                <tr class="${index === 0 ? "day-break" : ""}">
+                  <td>${row.showDayLabel ? escapeHtml(day.dayLabel) : ""}</td>
+                  <td class="${row.isClosed ? "closed" : ""}">${escapeHtml(row.hoursText)}</td>
+                  <td>${escapeHtml(row.notes || "")}</td>
+                </tr>
+              `)).join("")}
+            </tbody>
+          </table>
+        `;
+        return renderAccordion(g.title, table, g.display || { defaultOpen: true });
+      }).join("");
+    }
+
+    function renderContacts(payload) {
+      const contacts = getComponent(payload, "contacts");
+      if (!contacts || !contacts.items || !contacts.items.length) return "";
+      return `
+        ${contacts.items.map((c) => `
+          <div class="contact-row">
+            <div class="contact-label">${escapeHtml(c.label)}</div>
+            <div class="contact-values">
+              ${(c.values || []).map((v) => {
+                if (v.preferredAction && v.preferredAction.type === "mailto") {
+                  return `<div class="contact-value-item"><button type="button" class="button small contact-value" style="border:0;padding:0;background:transparent;text-decoration:underline;" onclick="handleEmailClick('${escapeHtml(escapeJsString(v.value))}')">${escapeHtml(v.value)}</button></div>`;
+                }
+                if (v.preferredAction && v.preferredAction.type === "copy") {
+                  return `<div class="contact-value-item"><button type="button" class="button small contact-value" style="border:0;padding:0;background:transparent;text-decoration:underline;" onclick="copyContactValue('${escapeHtml(escapeJsString(v.value))}')">${escapeHtml(v.value)}</button></div>`;
+                }
+                if (v.preferredAction && v.preferredAction.type === "tel") {
+                  return `<div class="contact-value-item"><a class="contact-value" href="${escapeHtml(v.preferredAction.uri)}">${escapeHtml(v.value)}</a></div>`;
+                }
+                return `<div class="contact-value-item contact-value">${escapeHtml(v.value)}</div>`;
+              }).join("")}
+            </div>
+          </div>
+        `).join("")}
+        ${(contacts.messages || []).map((m) => `<div class="provider-notice"><div class="provider-icon-dot">i</div><div>${escapeHtml(m.text)}</div></div>`).join("")}
+      `;
+    }
+
+    function renderLocations(payload) {
+      const address = getComponent(payload, "address");
+      if (!address || !nonEmpty(address.displayAddress)) return "";
+      return `
+        <div>
+          <a href="${escapeHtml(address.navigationUrl || "#")}">${escapeHtml(address.displayAddress)}</a>
+          ${address.accessibility && address.accessibility.isVisible ? `<div class="provider-notice" style="margin-top:12px"><div class="provider-icon-dot">i</div><div>${escapeHtml(address.accessibility.text)}</div></div>` : ""}
+          ${(address.messages || []).map((m) => `<div class="provider-notice"><div class="provider-icon-dot">i</div><div>${escapeHtml(m.text)}</div></div>`).join("")}
+        </div>
+      `;
+    }
+
+    function renderServices(payload) {
+      const services = getComponent(payload, "services");
+      const groups = services && services.groups ? services.groups : [];
+      if (!groups.length) return "";
+      const renderServiceRows = (items) => items.map((item) => `
+        <div class="treat-row">
+          <div>${escapeHtml(item.name)}</div>
+          <div class="coverage-badge ${escapeHtml(item.coverageType || "unknown")}">${escapeHtml(item.coverageText || "")}</div>
+        </div>
+      `).join("");
+
+      return groups.map((g) => {
+        const display = g.display || { defaultOpen: true, previewRows: g.items.length, hasOverflow: false };
+        const fullContent = renderServiceRows(g.items);
+        const previewItems = display.hasOverflow ? g.items.slice(0, display.previewRows) : g.items;
+        const previewContent = display.hasOverflow ? renderServiceRows(previewItems) : null;
+        return renderAccordion(g.title || "", fullContent, display, previewContent);
+      }).join("");
+    }
+
+    function renderAppointments(payload) {
+      const appointments = getComponent(payload, "appointments");
+      if (!appointments || !appointments.isVisible) return "";
+      return (appointments.messages || []).map((message) => `
+        <div class="provider-notice"><div class="provider-icon-dot">i</div><div>${escapeHtml(message.text)}</div></div>
+      `).join("");
+    }
+
+    function renderDetails(payload) {
+      const resume = getComponent(payload, "resume");
+      if (!resume || !resume.sections || !resume.sections.length) return "";
+      return resume.sections.map((section) => `
+        <div class="kv">
+          <b>${escapeHtml(section.title)}</b>
+          ${section.items.map((item) => `
+            <div>
+              ${item.label ? `<span class="muted">${escapeHtml(item.label)}:</span> ` : ""}
+              ${escapeHtml(item.value)}
+            </div>
+          `).join("")}
+        </div>
+      `).join("");
+    }
+
+    function renderSearchResult(payload, index) {
+      const e = payload.entity || {};
+      const specializations = componentValues(getComponent(payload, "specializations"));
+      const professionalizations = componentValues(getComponent(payload, "professionalizations"));
+      const languages = componentValues(getComponent(payload, "languages"));
+      const absences = getComponent(payload, "absences");
+      const firstAbsence = absences && absences.isVisible ? (absences.items || []).find((item) => item.isDisplayed) : null;
+      const address = getComponent(payload, "address") || {};
+      const remarks = getComponent(payload, "remarks") || { items: [] };
+      const emergencyRemarks = (remarks.items || []).filter((remark) =>
+        remark.isVisible &&
+        remark.type === "emergency" &&
+        remark.targetArea === "pageTop" &&
+        nonEmpty(remark.text)
+      );
+      const icons = (getComponent(payload, "icons") || { items: [] }).items || [];
+      const accessibility = icons.find((icon) => icon.type === "accessibility");
+      const displayIcons = icons.filter((icon) => icon.type !== "accessibility");
+
+      return `
+        <article class="search-result-card">
+          <div class="search-result-hero">
+            <div>
+              <button type="button" class="button small search-result-name" style="border:0;background:transparent;padding:0" onclick="openEntityDetails(${index})">${escapeHtml(e.displayName || "")}</button>
+              <div class="search-result-meta">
+                ${specializations.length ? `${escapeHtml(specializations.join(", "))}<br>` : ""}
+                ${renderMetaLine((getComponent(payload, "professionalizations") || {}).title || "התמקצעות", professionalizations)}
+                ${renderMetaLine((getComponent(payload, "languages") || {}).title || "שפות", languages)}
+              </div>
+              ${firstAbsence ? `
+                <div class="search-result-warning">
+                  <span class="warn-icon">!</span>
+                  <span>${escapeHtml(firstAbsence.displayText)}${firstAbsence.reason ? `, ${escapeHtml(firstAbsence.reason)}` : ""}</span>
+                </div>
+              ` : ""}
+            </div>
+            <div class="search-result-avatar">דר</div>
+          </div>
+          <div class="search-result-footer">
+            ${accessibility ? `<span class="search-result-chip green" title="${escapeHtml(accessibility.text || "נגיש")}">♿ ${escapeHtml(accessibility.text || "נגיש")}</span>` : ""}
+            ${displayIcons.map((icon) => `<span class="search-result-chip">${escapeHtml(icon.text || "")}</span>`).join("")}
+            ${address.city ? `<span class="search-result-location">⌖ ${escapeHtml(address.city)}</span>` : ""}
+            ${emergencyRemarks.map((remark) => `<span class="search-result-message">✓ ${escapeHtml(remark.text)}</span>`).join("")}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderScreen(payload) {
+      if (!payload) return `<div class="provider-empty">אין payload להצגה</div>`;
+      const components = payload.components || {};
+      const topParts = [`<h2 class="service-screen-title">${escapeHtml((payload.presentation && payload.presentation.details && payload.presentation.details.title) || "")}</h2>`];
+      const mainParts = [];
+      const sideParts = [];
+      const appointmentContent = renderAppointments(payload);
+
+      if (components.remarks && components.remarks.isVisible) topParts.push(renderRemarks(payload));
+      topParts.push(renderHeader(payload));
+
+      if (components.absences && components.absences.isVisible) mainParts.push(renderSection(components.absences.title, renderAbsences(payload)));
+      if (components.schedule && components.schedule.isVisible) mainParts.push(renderSection(components.schedule.title, renderScheduleOnly(payload)));
+      if (components.address && components.address.isVisible) mainParts.push(renderSection(components.address.title, renderLocations(payload)));
+      if (components.facil && components.facil.isVisible) mainParts.push(renderSection(components.facil.title, ""));
+      if (components.services && components.services.isVisible) mainParts.push(renderSection(components.services.title, renderServices(payload)));
+      if (components.resume && components.resume.isVisible) mainParts.push(renderSection(components.resume.title, renderDetails(payload)));
+
+      if (appointmentContent) sideParts.push(renderSection((components.appointments || {}).title || "זימון תורים", appointmentContent));
+      if (components.contacts && components.contacts.isVisible) sideParts.push(renderSection(components.contacts.title, renderContacts(payload)));
+
+      return `
+        <div class="provider-screen service-screen">
+          ${topParts.filter(Boolean).join("")}
+          <div class="service-layout ${sideParts.length ? "" : "single"}">
+            <div class="service-main-column">${mainParts.filter(Boolean).join("")}</div>
+            ${sideParts.length ? `<div class="service-side-column">${sideParts.filter(Boolean).join("")}</div>` : ""}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSwitcher() {
+      if (state.payloads.length <= 1) {
+        switcher.innerHTML = "";
+        return;
+      }
+      switcher.innerHTML = state.payloads.map((p, index) => `
+        <button class="button small ${index === state.selectedIndex ? "primary" : ""}" onclick="selectEntity(${index})">
+          ${index + 1}. ${escapeHtml(p.entity.displayName || "ישות")}
+        </button>
+      `).join("");
+    }
+
+    window.selectEntity = function(index) {
+      state.selectedIndex = index;
+      renderAll();
+    };
+
+    window.openEntityDetails = function(index) {
+      state.selectedIndex = index;
+      state.activeTab = "screen";
+      document.querySelectorAll(".tab").forEach((tab) => {
+        tab.classList.toggle("active", tab.dataset.tab === "screen");
+      });
+      renderAll();
+    };
+
+    async function copyTextToClipboard(text, successMessage) {
+      try {
+        await navigator.clipboard.writeText(text);
+        window.alert(successMessage);
+      } catch (error) {
+        window.alert("לא ניתן להעתיק את ה-Payload");
+      }
+    }
+
+    function getSelectedPayloadJson() {
+      return JSON.stringify(state.payloads[state.selectedIndex] || {}, null, 2);
+    }
+
+    function getAllPayloadsJson() {
+      return JSON.stringify(state.response || { metadata: null, results: [] }, null, 2);
+    }
+
+    window.copyPayload = async function() {
+      await copyTextToClipboard(getSelectedPayloadJson(), "Payload של התוצאה הנבחרת הועתק");
+    };
+
+    window.copyAllPayloads = async function() {
+      await copyTextToClipboard(getAllPayloadsJson(), "ה-Response המלא הועתק");
+    };
+
+    function renderAll() {
+      const payload = state.payloads[state.selectedIndex];
+      const allPayloadsJson = getAllPayloadsJson();
+      renderSwitcher();
+      screenView.innerHTML = renderScreen(payload);
+      resultsView.innerHTML = renderSearchResults(state.payloads);
+      payloadView.innerHTML = `
+        <div class="payload-toolbar">
+          <button type="button" class="button small" onclick="copyAllPayloads()">העתק Response מלא</button>
+          <button type="button" class="button small" onclick="copyPayload()">העתק תוצאה נבחרת</button>
+          <span class="payload-title">Response מלא (${state.payloads.length} תוצאות)</span>
+        </div>
+        <pre>${escapeHtml(allPayloadsJson)}</pre>
+      `;
+      screenView.style.display = state.activeTab === "screen" ? "block" : "none";
+      resultsView.style.display = state.activeTab === "results" ? "block" : "none";
+      payloadView.style.display = state.activeTab === "payload" ? "block" : "none";
+    }
+
+    function parseAndRender() {
+      try {
+        const parsed = JSON.parse(input.value);
+        const endpointConfig = endpointClientMap[endpointType.value] || endpointClientMap.app;
+        const transformContext = {
+          requestId: "simulator-request",
+          endpointKey: endpointType.value,
+          clientType: endpointConfig.clientType,
+          platform: endpointConfig.platform,
+          channel: endpointConfig.channel,
+        };
+        const sources = extractHits(parsed);
+        state.response = buildUniversalResponse(sources, transformContext);
+        state.payloads = state.response.results;
+        state.selectedIndex = 0;
+        errorBox.style.display = "none";
+        statusBox.textContent = `נמצאו ${state.payloads.length} אובייקטים`;
+        endpointStatusBox.textContent = `נגזר מה-endpoint: ${endpointConfig.label} / ${endpointConfig.clientType} / ${endpointConfig.channel}`;
+      } catch (error) {
+        state.response = { metadata: null, results: [] };
+        state.payloads = [];
+        errorBox.style.display = "block";
+        errorBox.textContent = `שגיאת JSON מקור: ${error.message}`;
+        statusBox.textContent = "";
+        endpointStatusBox.textContent = "";
+      }
+      renderAll();
+    }
+
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        state.activeTab = tab.dataset.tab;
+        document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
+        tab.classList.add("active");
+        renderAll();
+      });
+    });
+
+    document.getElementById("loadSampleBtn").addEventListener("click", () => {
+      input.value = sampleJson;
+      parseAndRender();
+    });
+
+    input.addEventListener("input", parseAndRender);
+    endpointType.addEventListener("change", parseAndRender);
+
+    input.value = sampleJson;
+    endpointType.value = "app";
+    renderTests();
+    parseAndRender();
+  </script>
+</body>
+</html>
