@@ -1,3 +1,4 @@
 /*
 !/.gitignore
-!/סימולטור עיבוד ותצוגת נתוני מדריך השירותים v2.html
+!/simulator html/
+!/simulator html/**

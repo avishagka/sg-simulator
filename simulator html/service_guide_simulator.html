@@ -1,0 +1,2953 @@
+﻿<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>מדריך השירותים החדש - סימולטור</title>
+  <style>
+    :root {
+      --font-family: "Noto Sans Hebrew", "Noto Sans", Arial, sans-serif;
+      --primary-main: #1769AA;
+      --primary-dark: #0F4F82;
+      --primary-light: #E8F2FB;
+      --success-main: #14743C;
+      --success-light: #E7F6EE;
+      --warning-main: #9A6500;
+      --warning-light: #FFF4D8;
+      --error-main: #B3261E;
+      --error-light: #FDECEB;
+      --background-default: #F5F7FA;
+      --background-paper: #FFFFFF;
+      --surface-secondary: #F8FAFC;
+      --text-primary: #1C2733;
+      --text-secondary: #607080;
+      --divider: #DCE3EA;
+      --border-strong: #B9C7D4;
+      --preview-background-top: #F6FBFE;
+      --preview-background-bottom: #EEF7FB;
+      --preview-hero: #DFF5FB;
+      --preview-info: #E5F6FD;
+      --preview-info-text: #0067A6;
+      --preview-shaban: #F0E9FF;
+      --preview-shaban-text: #5D3AA0;
+      --radius-button: 8px;
+      --radius-input: 8px;
+      --radius-panel: 12px;
+      --radius-card: 16px;
+      --radius-chip: 999px;
+      --shadow-panel: 0 1px 3px rgba(15, 23, 42, 0.08);
+      --shadow-card: 0 8px 18px rgba(0, 103, 166, 0.07);
+      --shadow-card-open: 0 12px 24px rgba(0, 103, 166, 0.12);
+      --focus-ring: 0 0 0 3px var(--primary-light);
+      --bg: var(--background-default);
+      --surface: var(--background-paper);
+      --surface-2: var(--surface-secondary);
+      --ink: var(--text-primary);
+      --muted: var(--text-secondary);
+      --line: var(--divider);
+      --primary: var(--primary-main);
+      --primary-soft: var(--primary-light);
+      --ok: var(--success-main);
+      --ok-soft: var(--success-light);
+      --warn: var(--warning-main);
+      --warn-soft: var(--warning-light);
+      --err: var(--error-main);
+      --err-soft: var(--error-light);
+      --card: var(--surface);
+      --border: var(--line);
+      --accent-soft: var(--preview-hero);
+      --info: var(--preview-info);
+      --info-text: var(--preview-info-text);
+      --success: var(--success-light);
+      --success-text: var(--success-main);
+      --shaban: var(--preview-shaban);
+      --shaban-text: var(--preview-shaban-text);
+      --radius: var(--radius-panel);
+      --shadow: var(--shadow-panel);
+      font-family: var(--font-family);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-family);
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 1.6;
+    }
+
+    h1, h2, h3, p {
+      margin-top: 0;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    summary:focus-visible,
+    .search-result-card:focus-visible,
+    .contact-action:focus-visible {
+      outline: 0;
+      border-color: var(--primary-main);
+      box-shadow: var(--focus-ring);
+    }
+
+    .app {
+      width: min(1440px, calc(100vw - 32px));
+      margin: 16px auto;
+      display: grid;
+      gap: 12px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-panel);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel.header {
+      box-shadow: none;
+      border-color: var(--divider);
+    }
+
+    .panel-head {
+      min-height: 52px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .panel-subtitle {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .header {
+      display: grid;
+      gap: 14px;
+    }
+
+    .title-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 14px;
+      align-items: start;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      color: var(--primary-dark);
+      font-size: 24px;
+      font-weight: 700;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 13px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 320px 180px 190px 96px 96px;
+      gap: 12px;
+      align-items: end;
+      justify-content: start;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-input);
+      background: #fff;
+      color: var(--ink);
+      min-height: 40px;
+      padding: 8px 12px;
+    }
+
+    textarea {
+      min-height: 240px;
+      direction: ltr;
+      text-align: left;
+      font-family: Consolas, "Courier New", monospace;
+      resize: vertical;
+    }
+
+    .button {
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-button);
+      background: #fff;
+      color: var(--ink);
+      padding: 8px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .button.primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+    }
+
+    .button.ghost {
+      background: #fff;
+      border-color: var(--line);
+      color: var(--primary);
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .status-strip, .summary-strip, .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .status-strip {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .header-errors {
+      display: grid;
+      gap: 6px;
+      width: min(100%, 930px);
+      justify-self: start;
+    }
+
+    .header-errors[hidden] {
+      display: none;
+    }
+
+    .status-strip.header-status {
+      justify-content: flex-end;
+      text-align: left;
+    }
+
+    .run-state {
+      display: grid;
+      gap: 2px;
+    }
+
+    .run-state-label {
+      color: var(--ink);
+    }
+
+    .run-state-meta {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .quiet-meta {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .pill {
+      min-height: 28px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-chip);
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .pill.ok { background: var(--ok-soft); color: var(--ok); border-color: #bbf7d0; }
+    .pill.warn { background: var(--warn-soft); color: var(--warn); border-color: #fde68a; }
+    .pill.err { background: var(--err-soft); color: var(--err); border-color: #fecaca; }
+
+    .stepper {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(120px, 1fr));
+      gap: 4px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-panel);
+      background: #fff;
+      padding: 4px;
+    }
+
+    .step {
+      border: 1px solid transparent;
+      border-radius: var(--radius-button);
+      background: transparent;
+      min-height: 48px;
+      padding: 7px 8px;
+      text-align: right;
+      display: grid;
+      align-content: space-between;
+      color: var(--ink);
+    }
+
+    .step.active {
+      border-color: #cfe4ef;
+      background: var(--primary-soft);
+      box-shadow: none;
+    }
+
+    .step-name {
+      font-size: 12px;
+      font-weight: 600;
+      direction: rtl;
+      text-align: right;
+      unicode-bidi: plaintext;
+      overflow-wrap: anywhere;
+    }
+
+    .step-state {
+      color: var(--muted);
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .step-state::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: var(--radius-chip);
+      background: var(--line);
+    }
+
+    .step-state.done::before { background: var(--ok); }
+    .step-state.waiting::before { background: var(--muted); }
+    .step-state.needs-input::before { background: var(--warn); }
+    .step-state.error::before { background: var(--err); }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(520px, 1fr) minmax(520px, .95fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .workbench, .preview-panel {
+      position: sticky;
+      top: 10px;
+    }
+
+    .workbench {
+      box-shadow: none;
+    }
+
+    .workbench .panel-body {
+      background: #fff;
+    }
+
+    .main-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .json-box {
+      background: #101827;
+      color: #dbeafe;
+      border-radius: var(--radius-button);
+      padding: 12px;
+      overflow: auto;
+      max-height: 620px;
+      direction: ltr;
+      text-align: left;
+      unicode-bidi: plaintext;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      white-space: pre;
+    }
+
+    .summary-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .summary-item {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-panel);
+      background: #fff;
+      padding: 12px 16px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .summary-metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: var(--radius-panel);
+      background: #fff;
+      padding: 12px;
+      display: grid;
+      gap: 4px;
+    }
+
+    .metric-value {
+      color: var(--ink);
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .metric-label {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .quiet-card {
+      border: 0;
+      border-right: 2px solid #cfe4ef;
+      border-radius: 0;
+      background: transparent;
+      padding: 6px 12px 6px 0;
+      color: #1d2840;
+      line-height: 1.6;
+    }
+
+    .explain-card {
+      border: 0;
+      border-right: 2px solid #cfe4ef;
+      border-radius: 0;
+      background: transparent;
+      padding: 6px 12px 6px 0;
+      color: #1d2840;
+      line-height: 1.6;
+      display: grid;
+      gap: 8px;
+    }
+
+    .explain-row {
+      display: grid;
+      grid-template-columns: 86px minmax(0, 1fr);
+      gap: 10px;
+      align-items: start;
+    }
+
+    .explain-label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .explain-text {
+      min-width: 0;
+    }
+
+    .technical-details {
+      border-top: 1px solid var(--line);
+      padding-top: 8px;
+      margin-top: 4px;
+    }
+
+    .technical-details > summary {
+      cursor: pointer;
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .contact-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .contact-text {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .contact-action {
+      color: var(--primary);
+      background: transparent;
+      border: 0;
+      padding: 0;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font: inherit;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .contact-action:hover {
+      text-decoration: underline;
+    }
+
+    .error-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .error-item {
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: var(--err);
+      padding: 0;
+      line-height: 1.5;
+    }
+
+    .split-lines {
+      display: grid;
+      gap: 4px;
+    }
+
+    .split-line {
+      display: block;
+    }
+
+    .workspace.preview-hidden {
+      grid-template-columns: 1fr;
+    }
+
+    .workspace.preview-hidden .preview-panel {
+      display: none;
+    }
+
+    .workspace.preview-full {
+      grid-template-columns: 1fr;
+    }
+
+    .workspace.preview-full .workbench {
+      display: none;
+    }
+
+    .workspace.explanation-visible {
+      grid-template-columns: minmax(520px, 1fr) minmax(520px, .95fr);
+    }
+
+    .workspace.explanation-visible .workbench,
+    .workspace.explanation-visible .preview-panel {
+      display: block;
+    }
+
+    .item-title {
+      font-weight: 600;
+      color: var(--primary);
+      font-size: 16px;
+      line-height: 1.4;
+    }
+
+    .item-text {
+      color: #1d2840;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .item-result-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-inline-end: 4px;
+    }
+
+    .preview-shell {
+      border: 0;
+      border-radius: 16px;
+      background: linear-gradient(180deg, var(--preview-background-top) 0%, var(--preview-background-bottom) 100%);
+      padding: 16px;
+      direction: rtl;
+    }
+
+    .preview-head {
+      max-width: 1080px;
+      margin: 0 auto 14px;
+      color: var(--muted);
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .results-list {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: grid;
+      gap: 16px;
+    }
+
+    .search-result-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      display: grid;
+      gap: 14px;
+      box-shadow: var(--shadow-card);
+      cursor: pointer;
+      overflow: hidden;
+      container-type: inline-size;
+    }
+
+    .search-result-card.open {
+      border-color: #8bd5ec;
+      box-shadow: var(--shadow-card-open);
+    }
+
+    .search-result-hero {
+      display: grid;
+      grid-template-columns: 76px 1fr;
+      gap: 18px;
+      align-items: center;
+      background: var(--accent-soft);
+      border-radius: 12px;
+      padding: 16px;
+      min-height: 146px;
+    }
+
+    .search-result-avatar,
+    .doctor-avatar {
+      border-radius: 50%;
+      background: #fff;
+      color: var(--info-text);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 400;
+      flex: none;
+    }
+
+    .preview-icon {
+      width: 16px;
+      height: 16px;
+      display: inline-block;
+      flex: none;
+      vertical-align: middle;
+      object-fit: contain;
+    }
+
+    .search-result-avatar .preview-icon,
+    .doctor-avatar .preview-icon {
+      width: 34px;
+      height: 34px;
+    }
+
+    .search-result-location .preview-icon,
+    .expanded-location-row .preview-icon,
+    .search-result-chip .preview-icon {
+      width: 15px;
+      height: 15px;
+    }
+
+    .search-result-avatar {
+      width: 68px;
+      height: 68px;
+      font-size: 23px;
+    }
+
+    .doctor-avatar {
+      width: 68px;
+      height: 68px;
+      font-size: 23px;
+    }
+
+    .search-result-name {
+      color: var(--info-text);
+      font-size: 22px;
+      line-height: 1.3;
+      font-weight: 700;
+      text-decoration: underline;
+      margin-bottom: 8px;
+    }
+
+    .search-result-meta {
+      color: #1d2840;
+      font-size: 15px;
+      line-height: 1.8;
+      display: grid;
+      gap: 1px;
+    }
+
+    .search-result-footer {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-inline: 2px;
+    }
+
+    .search-result-location-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-inline: 2px;
+    }
+
+    .search-result-location {
+      color: #1d2840;
+      font-size: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .search-result-chip {
+      border-radius: var(--radius-chip);
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      background: var(--info);
+      color: var(--info-text);
+      border: 1px solid #b8e6f4;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .search-result-chip.green {
+      background: var(--success);
+      color: var(--success-text);
+      border-color: transparent;
+    }
+
+    .search-result-chip.shaban {
+      background: var(--shaban);
+      color: var(--shaban-text);
+      border-color: #d8c9ff;
+    }
+
+    .message {
+      border: 1px solid #fde68a;
+      background: #fffbeb;
+      color: #713f12;
+      border-radius: var(--radius-button);
+      padding: 8px 10px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .expanded {
+      border-top: 0;
+      padding: 0 0 2px;
+      background: transparent;
+    }
+
+    .provider-screen {
+      display: grid;
+      gap: 20px;
+      padding-top: 2px;
+    }
+
+    .expanded-screen-title {
+      color: var(--info-text);
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1.3;
+      margin: 0;
+    }
+
+    .expanded-hero {
+      display: grid;
+      grid-template-columns: 76px 1fr;
+      gap: 18px;
+      align-items: center;
+      background: var(--accent-soft);
+      border-radius: 12px;
+      padding: 16px;
+      min-height: 132px;
+    }
+
+    .expanded-location-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: #1d2840;
+      font-size: 14px;
+      padding-inline: 4px;
+    }
+
+    .service-layout {
+      direction: ltr;
+      display: grid;
+      grid-template-columns: minmax(220px, .9fr) minmax(240px, 1.4fr);
+      grid-template-areas: "side main";
+      gap: 20px;
+      align-items: start;
+    }
+
+    .service-main-column {
+      grid-area: main;
+      direction: rtl;
+      display: grid;
+      gap: 16px;
+    }
+
+    .service-side-column {
+      grid-area: side;
+      direction: rtl;
+      display: grid;
+      gap: 16px;
+    }
+
+    .preview-section-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+
+    .preview-section-title {
+      color: var(--info-text);
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.4;
+      margin: 0 0 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #b8e6f4;
+    }
+
+    .section-content {
+      display: grid;
+      gap: 12px;
+      color: #1d2840;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .kv {
+      display: grid;
+      gap: 6px;
+    }
+
+    .kv-row {
+      display: grid;
+      grid-template-columns: 130px minmax(0, 1fr);
+      gap: 8px;
+      font-size: 13px;
+    }
+
+    .kv-key {
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .kv-value {
+      direction: ltr;
+      text-align: left;
+      unicode-bidi: plaintext;
+      overflow-wrap: anywhere;
+    }
+
+    .kv-value.explain {
+      direction: rtl;
+      text-align: right;
+      line-height: 1.6;
+    }
+
+    .empty {
+      border: 1px dashed var(--line);
+      border-radius: var(--radius-button);
+      background: var(--surface-2);
+      color: var(--muted);
+      padding: 18px;
+      text-align: center;
+    }
+
+    @container (max-width: 720px) {
+      .service-layout {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "main"
+          "side";
+        gap: 16px;
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .stepper {
+        display: flex;
+        overflow-x: auto;
+      }
+
+      .step {
+        min-width: 150px;
+      }
+
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .workspace.explanation-visible {
+        grid-template-columns: 1fr;
+      }
+
+      .workbench,
+      .preview-panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 900px) {
+      .controls {
+        grid-template-columns: 320px 180px 190px 96px 96px;
+        overflow-x: auto;
+      }
+
+      .service-layout {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "main"
+          "side";
+        gap: 16px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .title-row {
+        grid-template-columns: 1fr;
+      }
+
+      .status-strip.header-status {
+        justify-content: flex-start;
+        text-align: right;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="panel header">
+      <div class="panel-body header">
+        <div class="title-row">
+          <div>
+            <h1>מדריך השירותים החדש</h1>
+            <p class="subtitle">סימולטור זרימת הנתונים</p>
+          </div>
+          <div class="status-strip header-status" id="runStatus"></div>
+        </div>
+
+        <div class="controls">
+          <div class="field">
+            <label for="searchText">טקסט לחיפוש</label>
+            <input id="searchText" type="text" placeholder="לדוגמה: רופא עיניים" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label for="environment">סביבה</label>
+            <select id="environment">
+              <option value="false" selected>Production</option>
+              <option value="true">Test / QA</option>
+            </select>
+          </div>
+          <button class="button ghost" type="button" id="uploadButton">העלאת פלט מנוע חיפוש</button>
+          <input class="file-input" id="jsonFile" type="file" accept=".json,.txt,application/json" />
+          <button class="button primary" type="button" id="runButton">הפעל</button>
+          <button class="button" type="button" id="resetButton">ניקוי</button>
+        </div>
+
+        <div class="status-strip">
+          <span class="quiet-meta" id="fileNamePill">לא הועלה פלט מנוע חיפוש</span>
+          <span class="quiet-meta" id="rawSourcePill" hidden></span>
+        </div>
+        <div class="header-errors" id="headerErrors" hidden></div>
+      </div>
+    </header>
+
+    <nav class="stepper" id="stepper" aria-label="שלבי התהליך"></nav>
+
+    <main class="workspace" id="workspaceShell">
+      <section class="panel workbench">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title" id="workspaceTitle">בקשת חיפוש UI</h2>
+            <div class="panel-subtitle" id="workspaceSubtitle">ServiceGuideSearchRequest</div>
+          </div>
+          <div class="toolbar" id="workspaceActions"></div>
+        </div>
+        <div class="panel-body">
+          <div class="main-grid" id="workspaceBody"></div>
+        </div>
+      </section>
+
+      <section class="panel preview-panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">תצוגה מקדימה</h2>
+          </div>
+          <div class="toolbar" id="previewActions"></div>
+        </div>
+        <div class="panel-body" id="previewBody"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const INITIATOR_CODE = "001";
+    const MAX_UPLOAD_BYTES = 1000 * 1024;
+    const BFF_RULESET_VERSION = "v4-slim";
+
+    const steps = [
+      { id: "ui", name: "בקשת חיפוש UI", sub: "ServiceGuideSearchRequest" },
+      { id: "agentRequest", name: "בקשת חיפוש Agent", sub: "ServiceGuideSearchAgentRequest" },
+      { id: "searchResponse", name: "פלט מנוע חיפוש", sub: "Search Engine Response" },
+      { id: "orchestrator", name: "עיבוד אורקסטרטור", sub: "סיכום פעולות עיבוד" },
+      { id: "agentResponse", name: "תגובת Agent", sub: "ServiceGuideSearchAgentResponse" },
+      { id: "displayResponse", name: "תגובת BFF ל־UI", sub: "ServiceGuideDisplayResponse" },
+      { id: "preview", name: "תצוגה מקדימה", sub: "" },
+    ];
+
+    const state = {
+      selectedStep: "ui",
+      fileName: "",
+      searchJsonText: "",
+      searchJson: null,
+      flow: {},
+      orchestratorSummary: null,
+      displaySummary: null,
+      openCards: new Set(),
+      visibleCount: 10,
+      errors: [],
+      jsonVisible: {},
+      previewPanelOpen: false,
+      explanationOpen: false,
+    };
+
+    const els = {
+      searchText: document.getElementById("searchText"),
+      environment: document.getElementById("environment"),
+      uploadButton: document.getElementById("uploadButton"),
+      jsonFile: document.getElementById("jsonFile"),
+      runButton: document.getElementById("runButton"),
+      resetButton: document.getElementById("resetButton"),
+      fileNamePill: document.getElementById("fileNamePill"),
+      rawSourcePill: document.getElementById("rawSourcePill"),
+      headerErrors: document.getElementById("headerErrors"),
+      runStatus: document.getElementById("runStatus"),
+      workspaceShell: document.getElementById("workspaceShell"),
+      stepper: document.getElementById("stepper"),
+      workspaceTitle: document.getElementById("workspaceTitle"),
+      workspaceSubtitle: document.getElementById("workspaceSubtitle"),
+      workspaceActions: document.getElementById("workspaceActions"),
+      workspaceBody: document.getElementById("workspaceBody"),
+      previewActions: document.getElementById("previewActions"),
+      previewBody: document.getElementById("previewBody"),
+    };
+
+    const contactMap = {
+      "01": { type: "phone", label: "טלפון", order: 1, actionType: "copy" },
+      "02": { type: "appointments", label: "זימון תורים", order: 2, actionType: "copy" },
+      "03": { type: "fax", label: "פקס", order: 3 },
+      "04": { type: "mobile", label: "נייד", order: 4, actionType: "copy" },
+      "05": { type: "email", label: "דוא״ל", order: 5, actionType: "mailto" },
+    };
+
+    const scheduleMap = {
+      1: { type: "reception", title: "שעות פעילות הרופא", order: 1 },
+      2: { type: "appointments", title: "זימון תורים", order: 2 },
+      15: { type: "teamReception", title: "קבלת קהל צוות", order: 3 },
+    };
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function escapeJs(value) {
+      return String(value ?? "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+
+    function asArray(value) {
+      return Array.isArray(value) ? value : [];
+    }
+
+    function hasText(value) {
+      return value !== undefined && value !== null && String(value).trim() !== "";
+    }
+
+    function firstText(...values) {
+      return values.find(hasText) ?? null;
+    }
+
+    function makeRequestId() {
+      if (crypto && crypto.randomUUID) return crypto.randomUUID();
+      return `req-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function includeRawSource() {
+      return els.environment.value === "true";
+    }
+
+    function sourceFromHit(hit) {
+      return hit && hit.source ? hit.source : {};
+    }
+
+    function getServiceGuideNode(searchJson) {
+      return searchJson && searchJson.data && searchJson.data.service_guide ? searchJson.data.service_guide : null;
+    }
+
+    function extractHits(searchJson) {
+      const serviceGuide = getServiceGuideNode(searchJson);
+      return serviceGuide && Array.isArray(serviceGuide.hits) ? serviceGuide.hits : [];
+    }
+
+    function hasValidHitsPath(searchJson) {
+      const serviceGuide = getServiceGuideNode(searchJson);
+      return !!serviceGuide && Array.isArray(serviceGuide.hits);
+    }
+
+    function sourceTotalHits(searchJson) {
+      const serviceGuide = getServiceGuideNode(searchJson);
+      if (!serviceGuide || serviceGuide.total_hits === undefined || serviceGuide.total_hits === null || serviceGuide.total_hits === "") return null;
+      const total = Number(serviceGuide.total_hits);
+      return Number.isInteger(total) ? total : null;
+    }
+
+    function searchQueryId(searchJson) {
+      return searchJson?.data?.search_query_id ?? searchJson?.searchQueryId ?? null;
+    }
+
+    function buildUiRequest() {
+      return {
+        query: els.searchText.value.trim(),
+        page: 1,
+        pageSize: 10,
+        sort: 0,
+        initiatorCode: INITIATOR_CODE,
+      };
+    }
+
+    function buildAgentRequest(uiRequest) {
+      return {
+        requestId: state.flow.agentRequest?.requestId || makeRequestId(),
+        query: uiRequest.query,
+        page: uiRequest.page,
+        pageSize: 50,
+        sort: uiRequest.sort,
+        initiatorCode: INITIATOR_CODE,
+        options: {
+          includeRawSource: includeRawSource(),
+        },
+      };
+    }
+
+    function resultIdFromSource(source) {
+      return firstText(source.entity_id, source.service_provider_id, source.object_id);
+    }
+
+    function normalizeType10(code) {
+      return String(code ?? "").trim().replace(/^0+/, "") === "10";
+    }
+
+    function mapRemarks(source) {
+      const selected = asArray(source.remarks).find((item) => normalizeType10(item.remark_message_type_code) && hasText(item.remark_text));
+      if (!selected) return [];
+      return [{
+        remarkMessageTypeCode: selected.remark_message_type_code ?? null,
+        remarkSeqnr: selected.remark_seqnr ?? null,
+        remarkLineNumber: selected.remark_line_number ?? null,
+        remarkText: String(selected.remark_text).trim(),
+      }];
+    }
+
+    function mapSchedules(source) {
+      return asArray(source.schedule)
+        .filter((item) => [1, 2, 15].includes(Number(item.schedule_type)))
+        .map((item) => ({
+          scheduleType: Number(item.schedule_type),
+          scheduleDesc: item.schedule_desc ?? null,
+          availabilityWeekDay: hasText(item.availability_week_day) ? Number(item.availability_week_day) : null,
+          availabilityStartTime: item.availability_start_time ?? null,
+          availabilityEndTime: item.availability_end_time ?? null,
+          frequencyDesc: item.frequency_desc ?? null,
+          availableMorning: item.available_morning ?? null,
+          availableAfternoon: item.available_afternoon ?? null,
+          availableEvening: item.available_evening ?? null,
+        }));
+    }
+
+    function sourceLabel(source) {
+      return firstText(source.service_provider_name, source.service_name, source.entity_id, source.service_provider_id, source.object_id) || "ללא שם";
+    }
+
+    function formatSourceValue(value) {
+      return hasText(value) ? String(value).trim() : "null";
+    }
+
+    function remarkAnalysis(source) {
+      const rows = asArray(source.remarks);
+      const type10 = rows.filter((item) => normalizeType10(item.remark_message_type_code));
+      const type10WithText = type10.filter((item) => hasText(item.remark_text));
+      const selected = type10WithText[0] || null;
+      return {
+        sourceCount: rows.length,
+        type10Count: type10.length,
+        type10WithTextCount: type10WithText.length,
+        selected,
+        notType10Count: rows.length - type10.length,
+        type10WithoutTextCount: type10.length - type10WithText.length,
+        type10AfterSelectedCount: selected ? Math.max(0, type10WithText.length - 1) : 0,
+      };
+    }
+
+    function scheduleRowText(row, index) {
+      return `schedule ${index}: scheduleType=${formatSourceValue(row.schedule_type)}, day=${formatSourceValue(row.availability_week_day)}, start=${formatSourceValue(row.availability_start_time)}, end=${formatSourceValue(row.availability_end_time)}`;
+    }
+
+    function scheduleTypeSummary(type, rows) {
+      const days = Array.from(new Set(rows
+        .map((row) => row.availability_week_day)
+        .filter(validWeekDay)
+        .map(dayLabel)));
+      return `scheduleType ${type} - ${scheduleMap[type].title}: ${rows.length} רשומות, ${days.length} ימים (${days.join(", ") || "לא נמצאו נתונים"})`;
+    }
+
+    function scheduleAnalysis(source, sourceRank) {
+      const rows = asArray(source.schedule);
+      const kept = rows.map((row, index) => ({ row, index })).filter(({ row }) => [1, 2, 15].includes(Number(row.schedule_type)));
+      const filtered = rows.map((row, index) => ({ row, index })).filter(({ row }) => ![1, 2, 15].includes(Number(row.schedule_type)));
+      const byType = [1, 2, 15].map((type) => scheduleTypeSummary(type, kept.filter(({ row }) => Number(row.schedule_type) === type).map(({ row }) => row)));
+      const filteredDetails = filtered.map(({ row }) => `sourceRank ${sourceRank}: scheduleType=${formatSourceValue(row.schedule_type)}. נפסל כי אינו 1, 2 או 15.`);
+      return {
+        sourceCount: rows.length,
+        keptCount: kept.length,
+        filteredCount: filtered.length,
+        byType,
+        filteredDetails,
+      };
+    }
+
+    function dateObjectForDisplay(date) {
+      if (!date) return "null";
+      return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
+    }
+
+    function dateTimeInIsrael(date = new Date()) {
+      return new Intl.DateTimeFormat("he-IL", {
+        timeZone: "Asia/Jerusalem",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      }).format(date);
+    }
+
+    function absenceAnalysis(source) {
+      const today = todayInIsrael();
+      const rows = asArray(source.absence);
+      let invalidCount = 0;
+      let pastCount = 0;
+      let relevantCount = 0;
+      rows.forEach((item) => {
+        const start = parseSourceDate(item.absence_bdate);
+        const end = parseSourceDate(item.absence_edate) || start;
+        if (!start || !end) {
+          invalidCount += 1;
+        } else if (end < today) {
+          pastCount += 1;
+        } else {
+          relevantCount += 1;
+        }
+      });
+      return {
+        sourceCount: rows.length,
+        invalidCount,
+        pastCount,
+        relevantCount,
+      };
+    }
+
+    function parseSourceDate(value) {
+      if (!hasText(value)) return null;
+      const text = String(value).trim();
+      let day;
+      let month;
+      let year;
+      const dotted = text.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+      const sap = text.match(/^(\d{4})(\d{2})(\d{2})$/);
+      if (dotted) {
+        day = Number(dotted[1]); month = Number(dotted[2]); year = Number(dotted[3]);
+      } else if (sap) {
+        year = Number(sap[1]); month = Number(sap[2]); day = Number(sap[3]);
+      } else {
+        return null;
+      }
+      const date = new Date(year, month - 1, day);
+      return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    function sameDateString(a, b) {
+      return String(a ?? "").trim() === String(b ?? "").trim();
+    }
+
+    function todayInIsrael() {
+      const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Jerusalem",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).formatToParts(new Date());
+      const get = (type) => Number(parts.find((part) => part.type === type)?.value);
+      return new Date(get("year"), get("month") - 1, get("day"));
+    }
+
+    function selectRelevantAbsence(source) {
+      const today = todayInIsrael();
+      const candidates = asArray(source.absence)
+        .map((item, index) => {
+          const start = parseSourceDate(item.absence_bdate);
+          const end = parseSourceDate(item.absence_edate) || start;
+          if (!start || !end || end < today) return null;
+          return { item, start, end, index };
+        })
+        .filter(Boolean)
+        .sort((a, b) => {
+          const aCurrent = a.start <= today && a.end >= today ? 0 : 1;
+          const bCurrent = b.start <= today && b.end >= today ? 0 : 1;
+          return aCurrent - bCurrent || a.start - b.start || a.index - b.index;
+        });
+      return candidates[0]?.item || null;
+    }
+
+    function mapAbsences(source) {
+      const absence = selectRelevantAbsence(source);
+      if (!absence) return [];
+      const mapped = {
+        absenceBdate: absence.absence_bdate ?? null,
+        absenceEdate: absence.absence_edate ?? null,
+        absenceReasonDis: absence.absence_reason_dis ?? null,
+      };
+      if (absence.absence_reason_dis === true && hasText(absence.absence_reason)) {
+        mapped.absenceReason = absence.absence_reason;
+      }
+      return [mapped];
+    }
+
+    function mapSubstitutes(source, selectedAbsences) {
+      const absence = selectedAbsences[0];
+      if (!absence) return [];
+      const selected = asArray(source.substitute).find((item) =>
+        sameDateString(item.sub_bdate, absence.absenceBdate) &&
+        sameDateString(item.sub_edate, absence.absenceEdate)
+      );
+      if (!selected) return [];
+      return [{
+        subBdate: selected.sub_bdate ?? null,
+        subEdate: selected.sub_edate ?? null,
+        subName: selected.sub_name ?? null,
+        subOtype: selected.sub_otype ?? null,
+        subPernr: selected.sub_pernr ?? null,
+        subRemark: selected.sub_remark ?? null,
+      }];
+    }
+
+    function mapTreatAreaList(source) {
+      return asArray(source.treat_area_list).map((item) => ({
+        treatAreaCode: item.treat_area_code ?? null,
+        treatArea: item.treat_area ?? null,
+      }));
+    }
+
+    function mapLanguages(source) {
+      return asArray(source.languages).map((item) => ({
+        languageCode: item.language_code ?? null,
+        language: item.language ?? null,
+        languageDataType: item.language_data_type ?? null,
+        seqnrLanguages: item.seqnr_languages ?? null,
+      }));
+    }
+
+    function mapProfArea(source) {
+      return asArray(source.prof_area).map((item) => ({
+        professAreaCode: item.profess_area_code ?? null,
+        objectType: item.object_type ?? null,
+        personNumber: item.person_number ?? null,
+        professAreaDesc: item.profess_area_desc ?? null,
+        objectId: item.object_id ?? null,
+      }));
+    }
+
+    function mapServTreats(source) {
+      return asArray(source.serv_treats).map((item) => ({
+        cptCode: item.cpt_code ?? null,
+        sgTreatName: item.sg_treat_name ?? null,
+        cellTreatName: item.cell_treat_name ?? null,
+        hebrewText: item.hebrew_text ?? null,
+        hebrewServiceName: item.hebrew_service_name ?? null,
+        cptPubtName: item.cpt_pubt_name ?? null,
+        cptPubt: item.cpt_pubt ?? null,
+        coverageCode: item.treat_is_personal === true ? "COMPLEMENTARY" : "BASKET",
+      }));
+    }
+
+    function mapContacts(source) {
+      return asArray(source.contact).map((item) => ({
+        chapterCode: item.chapter_code ?? null,
+        advertiseChannel: item.advertise_channel ?? null,
+        contactType: item.contact_type ?? null,
+        contactDesc: item.contact_desc ?? null,
+        objectType: item.object_type ?? null,
+        personNumber: item.person_number ?? null,
+        contactDetail: item.contact_detail ?? null,
+        contactFull: item.contact_full ?? null,
+        objectId: item.object_id ?? null,
+        contactCode: item.contact_code ?? null,
+      }));
+    }
+
+    function mapResumes(source) {
+      return asArray(source.resume).map((item) => ({
+        resumeCode: item.resume_code ?? null,
+        resumeTopic: item.resume_topic ?? null,
+        resumeTitle1: item.resume_title1 ?? null,
+        resumeTitle1Contents: item.resume_title1_contents ?? null,
+        resumeTitle2: item.resume_title2 ?? null,
+        resumeTitle2Contents: item.resume_title2_contents ?? null,
+        resumeTitle3: item.resume_title3 ?? null,
+        resumeTitle3Contents: item.resume_title3_contents ?? null,
+      }));
+    }
+
+    function mapFacilServices(source) {
+      return asArray(source.facil_services).map((item) => ({
+        facilServiceName: item.facil_service_name ?? null,
+        serviceOtype: item.service_otype ?? null,
+        facilServicesTitle: item.facil_services_title ?? null,
+        serviceType: hasText(item.service_type) ? Number(item.service_type) : null,
+        servicePernr: item.service_pernr ?? null,
+        treatAreaString: item.treat_area_string ?? null,
+        serviceObjid: item.service_objid ?? null,
+      }));
+    }
+
+    function mapAgentHit(rawHit, source, sourceRank, rank, agentRequest) {
+      const absences = mapAbsences(source);
+      return {
+        resultId: resultIdFromSource(source),
+        rank,
+        sourceRank,
+        score: rawHit.score ?? null,
+        originalScore: rawHit.original_score ?? null,
+        timestamp: source["@timestamp"] ?? null,
+        entityId: source.entity_id ?? null,
+        objectType: source.object_type ?? null,
+        objectId: source.object_id ?? null,
+        employeeNumber: source.employee_number ?? null,
+        serviceProviderId: source.service_provider_id ?? null,
+        facilityCode: source.facility_code ?? null,
+        occupationCode: source.occupation_code ?? null,
+        chapterCode: source.chapter_code ?? null,
+        chapterName: source.chapter_name ?? null,
+        chapterNameUrl: source.chapter_name_url ?? null,
+        serviceProviderName: source.service_provider_name ?? null,
+        serviceProviderNameUrl: source.service_provider_name_url ?? null,
+        serviceName: source.service_name ?? null,
+        serviceProviderGender: source.service_provider_gender ?? null,
+        serviceNameDoc: source.service_name_doc ?? null,
+        cityCode: source.city_code ?? null,
+        cityName: source.city_name ?? null,
+        fullAddress: source.full_address ?? null,
+        streetCode: source.street_code ?? null,
+        streetName: source.street_name ?? null,
+        houseNumber: source.house_number ?? null,
+        url: source.url ?? null,
+        accessibility: source.accessibility ?? null,
+        accessibilityBool: source.accessibility_bool ?? null,
+        specializationList: asArray(source.specialization_list),
+        treatAreaString: source.treat_area_string ?? null,
+        languageList: source.language_list ?? null,
+        professAreaDescList: source.profess_area_desc_list ?? null,
+        sgTreatNameList: source.sg_treat_name_list ?? null,
+        cellTreatNameList: source.cell_treat_name_list ?? null,
+        referringText: source.referring_text ?? null,
+        licenseNumber: source.license_number ?? null,
+        shabanType: source.shaban_type ?? null,
+        shabanInd: source.shaban_ind ?? null,
+        mlhInd: source.mlh_ind ?? null,
+        membershipStatusCode: source.limited_memb_icon === true ? "LIMITED" : null,
+        homeClinicIcon: source.home_clinic_icon ?? null,
+        sharedClinicIcon: source.shared_clinic_icon ?? null,
+        absenceIcon: source.absence_icon ?? null,
+        usIcon: source.us_icon ?? null,
+        pharmacyIcon: source.pharmacy_icon ?? null,
+        substituteInd: source.substitute_ind ?? null,
+        category: source.category ?? null,
+        subCategory: source.sub_category ?? null,
+        subBegda: source.sub_begda ?? null,
+        initiatorCode: source.initiator_code ?? null,
+        treatAreaList: mapTreatAreaList(source),
+        languages: mapLanguages(source),
+        profArea: mapProfArea(source),
+        servTreats: mapServTreats(source),
+        contacts: mapContacts(source),
+        remarks: mapRemarks(source),
+        resumes: mapResumes(source),
+        schedules: mapSchedules(source),
+        facilServices: mapFacilServices(source),
+        absences,
+        substitutes: mapSubstitutes(source, absences),
+        filter: { filterFields: asArray(source.filter?.filter_fields) },
+        rawSource: agentRequest.options.includeRawSource ? source : null,
+      };
+    }
+
+    function buildAgentResponse(searchJson, agentRequest) {
+      const rawHits = extractHits(searchJson);
+      const sourceEntries = rawHits.map((hit, sourceRank) => ({ hit, source: sourceFromHit(hit), sourceRank }));
+      const initiatorMatchedEntries = sourceEntries.filter((entry) => String(entry.source.initiator_code ?? "") === INITIATOR_CODE);
+      const initiatorRejectedEntries = sourceEntries.filter((entry) => String(entry.source.initiator_code ?? "") !== INITIATOR_CODE);
+      const matched = initiatorMatchedEntries.filter((entry) => hasText(resultIdFromSource(entry.source)));
+      const rejectedWithoutResultIdEntries = initiatorMatchedEntries.filter((entry) => !hasText(resultIdFromSource(entry.source)));
+      const summary = {
+        sourceHits: rawHits.length,
+        initiatorMatched: initiatorMatchedEntries.length,
+        rejectedByInitiator: initiatorRejectedEntries.length,
+        rejectedWithoutResultId: rejectedWithoutResultIdEntries.length,
+        finalHits: 0,
+        operations: [],
+      };
+
+      const hits = matched.map((entry, rank) => mapAgentHit(entry.hit, entry.source, entry.sourceRank, rank, agentRequest));
+      summary.finalHits = hits.length;
+      const fallbackRows = matched.map((entry) => {
+        const source = entry.source;
+        const fallbackField = hasText(source.entity_id) ? "entityId" : (hasText(source.service_provider_id) ? "serviceProviderId" : "objectId");
+        return {
+          sourceRank: entry.sourceRank,
+          resultId: resultIdFromSource(source),
+          fallbackField,
+          name: firstText(source.service_provider_name, source.service_name) || "",
+        };
+      });
+      const fallbackCounts = fallbackRows.reduce((acc, row) => {
+        acc[row.fallbackField] = (acc[row.fallbackField] || 0) + 1;
+        return acc;
+      }, {});
+      const rankRows = hits.map((hit) => `${hit.resultId}: sourceRank=${hit.sourceRank}, rank=${hit.rank}`);
+      const remarkRows = matched.map((entry) => {
+        const hit = hits.find((item) => item.sourceRank === entry.sourceRank);
+        const analysis = remarkAnalysis(entry.source);
+        const selected = analysis.selected;
+        const selectedText = selected
+          ? `נבחרה הערה: remarkMessageTypeCode=${formatSourceValue(selected.remark_message_type_code)}, remarkSeqnr=${formatSourceValue(selected.remark_seqnr)}, remarkLineNumber=${formatSourceValue(selected.remark_line_number)}, remarkText="${String(selected.remark_text).trim()}"`
+          : "לא נמצאה הערה מסוג 10 עם טקסט. remarks[] הוחזר ריק.";
+        return `${hit?.resultId || `sourceRank ${entry.sourceRank}`} (${sourceLabel(entry.source)}): נבדקו ${analysis.sourceCount}; סוג 10=${analysis.type10Count}; סוג 10 עם טקסט=${analysis.type10WithTextCount}; ${selectedText}; לא הוחזרו: לא סוג 10=${analysis.notType10Count}, סוג 10 ללא טקסט=${analysis.type10WithoutTextCount}, אחרי ההערה שנבחרה=${analysis.type10AfterSelectedCount}`;
+      });
+      const sourceRemarksCount = matched.reduce((sum, entry) => sum + remarkAnalysis(entry.source).sourceCount, 0);
+      const selectedRemarksCount = hits.reduce((sum, hit) => sum + hit.remarks.length, 0);
+      const scheduleAnalyses = matched.map((entry) => ({ entry, analysis: scheduleAnalysis(entry.source, entry.sourceRank) }));
+      const sourceSchedulesCount = scheduleAnalyses.reduce((sum, item) => sum + item.analysis.sourceCount, 0);
+      const selectedSchedulesCount = scheduleAnalyses.reduce((sum, item) => sum + item.analysis.keptCount, 0);
+      const filteredSchedulesCount = scheduleAnalyses.reduce((sum, item) => sum + item.analysis.filteredCount, 0);
+      const scheduleTypeRows = [1, 2, 15].map((type) => {
+        const rows = matched.flatMap((entry) => asArray(entry.source.schedule).filter((row) => Number(row.schedule_type) === type));
+        return scheduleTypeSummary(type, rows);
+      });
+      const filteredScheduleRows = scheduleAnalyses.flatMap((item) => item.analysis.filteredDetails);
+      const membershipCounts = hits.reduce((acc, hit) => {
+        const key = hit.membershipStatusCode || "null";
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+      const coverageCounts = hits.flatMap((hit) => hit.servTreats).reduce((acc, item) => {
+        const key = item.coverageCode || "null";
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+      const selectedAbsencesCount = hits.reduce((sum, hit) => sum + hit.absences.length, 0);
+      const absenceAnalyses = matched.map((entry) => ({ entry, analysis: absenceAnalysis(entry.source), hit: hits.find((item) => item.sourceRank === entry.sourceRank) }));
+      const sourceAbsencesCount = absenceAnalyses.reduce((sum, item) => sum + item.analysis.sourceCount, 0);
+      const invalidAbsencesCount = absenceAnalyses.reduce((sum, item) => sum + item.analysis.invalidCount, 0);
+      const pastAbsencesCount = absenceAnalyses.reduce((sum, item) => sum + item.analysis.pastCount, 0);
+      const relevantAbsencesCount = absenceAnalyses.reduce((sum, item) => sum + item.analysis.relevantCount, 0);
+      const selectedSubstitutesCount = hits.reduce((sum, hit) => sum + hit.substitutes.length, 0);
+      const sourceSubstitutesCount = matched.reduce((sum, entry) => sum + asArray(entry.source.substitute).length, 0);
+      const calculationTime = dateTimeInIsrael();
+      const comparisonDate = dateObjectForDisplay(todayInIsrael());
+      summary.calculationTime = calculationTime;
+      summary.comparisonDate = comparisonDate;
+      const formatCountMap = (map) => Object.entries(map).map(([key, value]) => `${key}: ${value}`).join(", ") || "לא נמצאו נתונים";
+      const rejectedInitiatorDetails = initiatorRejectedEntries.map((entry) => `sourceRank ${entry.sourceRank}: initiatorCode=${entry.source.initiator_code ?? "null"}`);
+      const rejectedResultDetails = rejectedWithoutResultIdEntries.map((entry) => `sourceRank ${entry.sourceRank}: ללא entityId/serviceProviderId/objectId`);
+      const absenceRows = absenceAnalyses.map(({ entry, analysis, hit }) => {
+        const absence = asArray(hit?.absences)[0];
+        if (!absence) {
+          return `${hit?.resultId || `sourceRank ${entry.sourceRank}`} (${sourceLabel(entry.source)}): נבדקו ${analysis.sourceCount}; לא תקינות=${analysis.invalidCount}; ישנות=${analysis.pastCount}; רלוונטיות=${analysis.relevantCount}; absences[] הוחזר ריק`;
+        }
+        return `${hit.resultId} (${sourceLabel(entry.source)}): נבדקו ${analysis.sourceCount}; לא תקינות=${analysis.invalidCount}; ישנות=${analysis.pastCount}; רלוונטיות=${analysis.relevantCount}; הוחזר absenceBdate=${formatSourceValue(absence.absenceBdate)}, absenceEdate=${formatSourceValue(absence.absenceEdate)}, absenceReasonDis=${formatSourceValue(absence.absenceReasonDis)}, absenceReason=${formatSourceValue(absence.absenceReason)}`;
+      });
+      const substituteRows = hits.map((hit) => {
+        const substitute = asArray(hit.substitutes)[0];
+        const absence = asArray(hit.absences)[0];
+        if (!absence) return `${hit.resultId}: לא חזרה היעדרות רלוונטית ולכן substitutes[] הוחזר ריק`;
+        if (!substitute) return `${hit.resultId}: נבדקו ממלאי מקום מול טווח ${absence.absenceBdate}-${absence.absenceEdate}; לא נמצא ממלא מקום תואם; substitutes[] הוחזר ריק`;
+        return `${hit.resultId}: נבחר ממלא מקום עם אותו טווח תאריכים; subBdate=${formatSourceValue(substitute.subBdate)}, subEdate=${formatSourceValue(substitute.subEdate)}, subName=${formatSourceValue(substitute.subName)}, subOtype=${formatSourceValue(substitute.subOtype)}, subPernr=${formatSourceValue(substitute.subPernr)}, subRemark=${formatSourceValue(substitute.subRemark)}`;
+      });
+      summary.operations = [
+        {
+          title: "סינון תוצאות",
+          value: `${summary.sourceHits} תוצאות התקבלו; ${summary.initiatorMatched} התאימו ל-initiatorCode=001; ${summary.rejectedByInitiator} נפסלו בגלל initiatorCode אחר; ${summary.rejectedWithoutResultId} נפסלו ללא resultId; totalHits=${hits.length}; sourceTotalHits=${String(sourceTotalHits(searchJson))}`,
+          details: rejectedInitiatorDetails,
+        },
+        {
+          title: "בדיקת מזהה תוצאה",
+          value: `${summary.rejectedWithoutResultId} תוצאות נפסלו ללא entityId/serviceProviderId/objectId`,
+          details: rejectedResultDetails,
+        },
+        {
+          title: "יצירת מזהה תוצאה",
+          value: `entityId: ${fallbackCounts.entityId || 0}, serviceProviderId: ${fallbackCounts.serviceProviderId || 0}, objectId: ${fallbackCounts.objectId || 0}`,
+          details: fallbackRows.map((row) => `sourceRank ${row.sourceRank}: ${row.fallbackField} → ${row.resultId}${row.name ? ` (${row.name})` : ""}`),
+        },
+        {
+          title: "חישוב דירוג",
+          value: `${hits.length} תוצאות שמרו sourceRank מקורי וקיבלו rank חדש אחרי הסינון`,
+          details: rankRows,
+        },
+        {
+          title: "קביעת סטטוס קבלת חברים",
+          value: formatCountMap(membershipCounts),
+          details: hits.map((hit) => `${hit.resultId}: limited_memb_icon → ${hit.membershipStatusCode || "null"}`),
+        },
+        {
+          title: "קביעת סוג כיסוי",
+          value: formatCountMap(coverageCounts),
+          details: hits.flatMap((hit) => hit.servTreats.map((item, index) => `${hit.resultId} טיפול ${index + 1}: ${item.coverageCode}`)),
+        },
+        {
+          title: "בחירת הערה להצגה",
+          value: `${selectedRemarksCount} הערות נבחרו מתוך ${sourceRemarksCount}; נשמרת רק ההערה הראשונה מסוג 10 שיש לה טקסט`,
+          details: remarkRows,
+        },
+        {
+          title: "בחירת שעות פעילות",
+          value: `${selectedSchedulesCount} רשומות schedules נשמרו מתוך ${sourceSchedulesCount}; ${filteredSchedulesCount} סוננו בגלל scheduleType שאינו 1/2/15`,
+          details: [...scheduleTypeRows, ...(filteredScheduleRows.length ? filteredScheduleRows : ["כל רשומות schedules עברו את הסינון."])],
+        },
+        {
+          title: "בחירת היעדרות להצגה",
+          value: `${selectedAbsencesCount} היעדרויות נבחרו מתוך ${sourceAbsencesCount}; מועד חישוב: ${calculationTime}; תאריך להשוואה: ${comparisonDate}`,
+          details: [
+            `מועד החישוב: ${calculationTime} Asia/Jerusalem`,
+            `השוואת היעדרויות לפי תאריך בלבד: ${comparisonDate}`,
+            `לא תקינות=${invalidAbsencesCount}, ישנות=${pastAbsencesCount}, רלוונטיות=${relevantAbsencesCount}`,
+            ...absenceRows,
+          ],
+        },
+        {
+          title: "בחירת ממלא מקום",
+          value: `${selectedSubstitutesCount} ממלאי מקום נבחרו מתוך ${sourceSubstitutesCount}; נבחר רק ממלא מקום עם אותו טווח תאריכים כמו ההיעדרות`,
+          details: substituteRows,
+        },
+      ];
+      state.orchestratorSummary = summary;
+
+      return {
+        requestId: agentRequest.requestId,
+        status: "success",
+        sourceSystem: "search_engine",
+        searchQueryId: searchQueryId(searchJson),
+        isProcessed: true,
+        totalHits: hits.length,
+        sourceTotalHits: sourceTotalHits(searchJson),
+        hits,
+      };
+    }
+
+    function avatarType(gender) {
+      const value = String(gender ?? "").trim().toLowerCase();
+      if (["גבר", "זכר", "male", "m"].includes(value)) return "doctorMale";
+      if (["אישה", "נקבה", "female", "f"].includes(value)) return "doctorFemale";
+      return "doctorDefault";
+    }
+
+    function specializationText(hit) {
+      return asArray(hit.specializationList).filter(hasText).join(", ") || hit.serviceNameDoc || "";
+    }
+
+    function professionalizationText(hit) {
+      const fromAreas = asArray(hit.treatAreaList).map((item) => item.treatArea).filter(hasText).join(", ");
+      const fromProf = asArray(hit.profArea).map((item) => item.professAreaDesc).filter(hasText).join(", ");
+      return fromAreas || hit.treatAreaString || fromProf || "";
+    }
+
+    function languagesText(hit) {
+      const fromArray = asArray(hit.languages)
+        .slice()
+        .sort((a, b) => Number(a.seqnrLanguages || 0) - Number(b.seqnrLanguages || 0))
+        .map((item) => item.language)
+        .filter(hasText)
+        .join(", ");
+      return fromArray || String(hit.languageList || "").split(",").map((item) => item.trim()).filter(Boolean).join(", ");
+    }
+
+    function subtitleLines(hit) {
+      return [
+        { type: "specialization", text: specializationText(hit) },
+        { type: "professionalization", text: professionalizationText(hit) },
+        { type: "languages", text: languagesText(hit) },
+      ].filter((line) => hasText(line.text));
+    }
+
+    function shabanChips(hit) {
+      const type = Number(hit.shabanType);
+      const chips = [];
+      if (type === 1 || type === 3) chips.push({ type: "shabanConsultation", text: "ייעוץ בתשלום נוסף" });
+      if (type === 2 || type === 3) chips.push({ type: "shabanTreatments", text: "ניתוחים וטיפולים בתשלום נוסף" });
+      return chips;
+    }
+
+    function collapsedChips(hit) {
+      const chips = [];
+      if (hit.accessibilityBool === true) chips.push({ type: "accessibility", text: hit.accessibility || "נגיש" });
+      chips.push(...shabanChips(hit));
+      if (hit.membershipStatusCode === "LIMITED") chips.push({ type: "limitedMembership", text: "לא מקבל חברים חדשים" });
+      return chips;
+    }
+
+    function remark10Messages(hit) {
+      return asArray(hit.remarks).filter((item) => hasText(item.remarkText)).map((item) => ({ type: "remark10", text: item.remarkText }));
+    }
+
+    function formatDateForDisplay(value) {
+      const date = parseSourceDate(value);
+      if (!date) return "";
+      return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
+    }
+
+    function absenceText(hit, absence, includeSubstitute = true) {
+      const start = formatDateForDisplay(absence.absenceBdate);
+      const end = formatDateForDisplay(absence.absenceEdate);
+      const female = avatarType(hit.serviceProviderGender) === "doctorFemale";
+      const who = female ? "הרופאה לא נמצאת" : "הרופא לא נמצא";
+      if (!start) return "";
+      let text = !end || start === end ? `${who} בתאריך: ${start}` : `${who} בין התאריכים: ${start} עד ${end}`;
+      const sub = includeSubstitute ? asArray(hit.substitutes)[0] : null;
+      if (sub && hasText(sub.subName)) {
+        text += `, ממלא מקום: ${sub.subName}`;
+        if (hasText(sub.subRemark)) text += ` - ${sub.subRemark}`;
+      }
+      return text;
+    }
+
+    function absenceMessages(hit) {
+      return asArray(hit.absences).map((absence) => ({ type: "absence", text: absenceText(hit, absence) })).filter((item) => hasText(item.text));
+    }
+
+    function buildAddressSection(hit) {
+      const messages = [];
+      if (hit.accessibilityBool === true) messages.push({ type: "accessibility", text: hit.accessibility || "נגיש" });
+      remark10Messages(hit).forEach((message) => messages.push(message));
+      if (!hasText(hit.cityName) && !messages.length) return null;
+      const section = { title: "כתובת" };
+      if (hasText(hit.cityName)) section.city = hit.cityName;
+      if (messages.length) section.messages = messages;
+      return section;
+    }
+
+    function buildAppointmentsSection(hit) {
+      if (hit.membershipStatusCode !== "LIMITED") return null;
+      return { title: "זימון תורים", messages: [{ type: "limitedMembership", text: "לא מקבל חברים חדשים" }] };
+    }
+
+    function contactTypeByRow(row) {
+      const code = String(row.contactCode ?? "").trim().padStart(2, "0");
+      const byCode = contactMap[code];
+      if (byCode) return byCode;
+      return { type: "other", label: row.contactDesc || "", order: 999 };
+    }
+
+    function buildContactsSection(hit) {
+      const seen = new Set();
+      const items = asArray(hit.contacts).map((row) => {
+        const text = hasText(row.contactDetail) ? String(row.contactDetail).trim() : "";
+        if (!hasText(text)) return null;
+        const meta = contactTypeByRow(row);
+        if (!hasText(meta.label)) return null;
+        const key = `${meta.type}:${text}`;
+        if (seen.has(key)) return null;
+        seen.add(key);
+        const item = { type: meta.type, label: meta.label, text };
+        if (meta.actionType === "copy") {
+          item.actionType = "copy";
+          item.actionValue = text;
+        }
+        if (meta.actionType === "mailto") {
+          item.actionType = "mailto";
+          item.actionValue = text;
+          item.actionUri = `mailto:${text}`;
+        }
+        item.order = meta.order;
+        return item;
+      }).filter(Boolean).sort((a, b) => a.order - b.order).map(({ order, ...item }) => item);
+      if (!items.length) return null;
+      const section = { title: "אמצעי קשר", items };
+      if (items.some((item) => item.type === "email")) {
+        section.messages = [{ type: "emailDisclaimer", text: "לורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית. סד אאוסמוד טמפור אינסידידונט אוט לבורה אה דולורה מגנה אליקווה." }];
+      }
+      return section;
+    }
+
+    function scheduleNotes(value) {
+      const text = String(value ?? "").trim();
+      return text && text !== "שבועית" ? text : "";
+    }
+
+    function scheduleDisplayRow(row) {
+      if (!scheduleMap[Number(row.scheduleType)] || !validWeekDay(row.availabilityWeekDay)) return null;
+      const start = normalizeTime(row.availabilityStartTime);
+      const end = normalizeTime(row.availabilityEndTime);
+      const hasRawStart = hasText(row.availabilityStartTime);
+      const hasRawEnd = hasText(row.availabilityEndTime);
+      const day = Number(row.availabilityWeekDay);
+      if (start && end) {
+        return {
+          scheduleType: Number(row.scheduleType),
+          availabilityWeekDay: day,
+          sortStart: start,
+          hoursText: `${start} עד ${end}`,
+          notes: scheduleNotes(row.frequencyDesc),
+        };
+      }
+      if (!hasRawStart && !hasRawEnd && day !== 7) {
+        return {
+          scheduleType: Number(row.scheduleType),
+          availabilityWeekDay: day,
+          sortStart: "99:99",
+          hoursText: "סגור",
+          notes: "",
+        };
+      }
+      return null;
+    }
+
+    function sameSchedulePattern(a, b) {
+      return a.hoursText === b.hoursText && (a.notes || "") === (b.notes || "");
+    }
+
+    function scheduleRowFromCluster(cluster) {
+      const first = cluster[0];
+      const last = cluster[cluster.length - 1];
+      const dayText = cluster.length === 1
+        ? dayLabel(first.availabilityWeekDay)
+        : `${dayLabel(first.availabilityWeekDay)} עד ${dayLabel(last.availabilityWeekDay)}`;
+      const row = { dayText, hoursText: first.hoursText };
+      if (hasText(first.notes)) row.notes = first.notes;
+      return row;
+    }
+
+    function mergeScheduleRows(rows) {
+      const merged = [];
+      rows.forEach((row) => {
+        const lastCluster = merged[merged.length - 1];
+        const previous = lastCluster && lastCluster[lastCluster.length - 1];
+        const isConsecutive = previous && Number(row.availabilityWeekDay) === Number(previous.availabilityWeekDay) + 1;
+        if (previous && isConsecutive && sameSchedulePattern(previous, row)) {
+          lastCluster.push(row);
+        } else {
+          merged.push([row]);
+        }
+      });
+      return merged.map(scheduleRowFromCluster);
+    }
+
+    function closedScheduleRow(scheduleType, day) {
+      return {
+        scheduleType: Number(scheduleType),
+        availabilityWeekDay: Number(day),
+        sortStart: "99:99",
+        hoursText: "סגור",
+        notes: "",
+      };
+    }
+
+    function scheduleRowsForGroup(sourceRows) {
+      const displayRows = sourceRows.map(scheduleDisplayRow).filter(Boolean);
+      const sourceDays = sourceRows
+        .map((row) => Number(row.availabilityWeekDay))
+        .filter((day) => Number.isInteger(day) && day >= 1 && day <= 6);
+      if (!sourceDays.length) return displayRows;
+      const coveredDays = new Set(displayRows.map((row) => Number(row.availabilityWeekDay)));
+      const minDay = Math.min(...sourceDays);
+      const maxDay = Math.max(...sourceDays);
+      const scheduleType = Number(sourceRows[0].scheduleType);
+      for (let day = minDay; day <= maxDay; day += 1) {
+        if (day !== 7 && !coveredDays.has(day)) {
+          displayRows.push(closedScheduleRow(scheduleType, day));
+        }
+      }
+      return displayRows.sort((a, b) => Number(a.availabilityWeekDay) - Number(b.availabilityWeekDay) || String(a.sortStart).localeCompare(String(b.sortStart)));
+    }
+
+    function buildScheduleSection(hit) {
+      const sourceGroups = asArray(hit.schedules).reduce((acc, row) => {
+        if (!scheduleMap[Number(row.scheduleType)] || !validWeekDay(row.availabilityWeekDay)) return acc;
+        acc[Number(row.scheduleType)] = acc[Number(row.scheduleType)] || [];
+        acc[Number(row.scheduleType)].push(row);
+        return acc;
+      }, {});
+      const groups = Object.entries(sourceGroups).map(([scheduleType, sourceRows]) => {
+        const meta = scheduleMap[Number(scheduleType)];
+        return {
+          type: meta.type,
+          title: meta.title,
+          order: meta.order,
+          rows: scheduleRowsForGroup(sourceRows),
+        };
+      }).filter((group) => group.rows.length).sort((a, b) => a.order - b.order).map(({ order, ...group }) => ({
+        ...group,
+        rows: mergeScheduleRows(group.rows),
+      }));
+      return groups.length ? { title: "שעות פעילות", groups } : null;
+    }
+
+    function dayLabel(value) {
+      return ({ 1: "א׳", 2: "ב׳", 3: "ג׳", 4: "ד׳", 5: "ה׳", 6: "ו׳", 7: "ש׳" })[Number(value)] || String(value ?? "");
+    }
+
+    function validWeekDay(value) {
+      const day = Number(value);
+      return Number.isInteger(day) && day >= 1 && day <= 7;
+    }
+
+    function normalizeTime(value) {
+      if (!hasText(value)) return "";
+      const match = String(value).trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+      if (!match) return "";
+      const hour = Number(match[1]);
+      const minute = Number(match[2]);
+      if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return "";
+      return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+    }
+
+    function cleanServiceText(text, code) {
+      const raw = String(text || "").trim();
+      if (!code) return raw;
+      return raw
+        .replace(String(code), "")
+        .replace(/^[\s\-:]+/, "")
+        .replace(/[\s\-:]+$/, "")
+        .trim() || raw;
+    }
+
+    function extractServiceCode(text) {
+      const match = String(text || "").match(/\b\d{3,}\b/);
+      return match ? match[0] : "";
+    }
+
+    function buildServicesSection(hit) {
+      const items = asArray(hit.servTreats).map((row) => {
+        const text = firstText(row.sgTreatName, row.cellTreatName, row.hebrewText, row.hebrewServiceName);
+        const code = firstText(row.cptCode, extractServiceCode(text));
+        if (!hasText(text)) return null;
+        return {
+          groupKey: hasText(row.cptPubt) ? row.cptPubt : "services",
+          groupTitle: hasText(row.cptPubt) ? (row.cptPubtName || "") : "",
+          text: hasText(text) ? cleanServiceText(text, code) : String(code || ""),
+          coverageText: row.coverageCode === "COMPLEMENTARY" ? "משלים" : "בסל",
+        };
+      }).filter(Boolean);
+      if (!items.length) return null;
+      const groupsMap = {};
+      items.forEach((item) => {
+        const key = item.groupKey;
+        groupsMap[key] = groupsMap[key] || { items: [] };
+        if (hasText(item.groupTitle)) groupsMap[key].title = item.groupTitle;
+        const { groupKey, groupTitle, ...clean } = item;
+        groupsMap[key].items.push(clean);
+      });
+      return { title: "ניתוחים וטיפולים", groups: Object.values(groupsMap) };
+    }
+
+    function buildAbsencesSection(hit) {
+      const items = asArray(hit.absences).map((absence) => {
+        const item = { text: absenceText(hit, absence) };
+        if (hasText(absence.absenceReason)) item.reason = absence.absenceReason;
+        return item;
+      }).filter((item) => hasText(item.text));
+      return items.length ? { title: "היעדרויות וממלאי מקום", items } : null;
+    }
+
+    function buildDisplayResult(hit) {
+      const title = firstText(hit.serviceProviderName, hit.serviceName) || "";
+      if (!hasText(title)) return null;
+      const avatar = avatarType(hit.serviceProviderGender);
+      const subtitles = subtitleLines(hit);
+      const collapsedMessages = [...remark10Messages(hit), ...absenceMessages(hit)];
+      const sections = {};
+      const address = buildAddressSection(hit);
+      const appointments = buildAppointmentsSection(hit);
+      const contacts = buildContactsSection(hit);
+      const schedule = buildScheduleSection(hit);
+      const services = buildServicesSection(hit);
+      const absences = buildAbsencesSection(hit);
+      if (address) sections.address = address;
+      if (appointments) sections.appointments = appointments;
+      if (contacts) sections.contacts = contacts;
+      if (schedule) sections.schedule = schedule;
+      if (services) sections.services = services;
+      if (absences) sections.absences = absences;
+      const collapsed = {
+        title,
+        avatarType: avatar,
+      };
+      if (subtitles.length) collapsed.subtitleLines = subtitles;
+      const chips = collapsedChips(hit);
+      if (chips.length) collapsed.chips = chips;
+      if (collapsedMessages.length) collapsed.messages = collapsedMessages;
+      if (hasText(hit.cityName)) collapsed.locationText = hit.cityName;
+      const header = {
+        title,
+        avatarType: avatar,
+      };
+      if (subtitles.length) header.subtitleLines = subtitles;
+      const headerChips = shabanChips(hit);
+      if (headerChips.length) header.chips = headerChips;
+      const expandedCard = { header };
+      if (Object.keys(sections).length) expandedCard.sections = sections;
+      return {
+        resultId: hit.resultId,
+        collapsedCard: collapsed,
+        expandedCard,
+      };
+    }
+
+    function countSectionRows(section) {
+      if (!section) return 0;
+      if (section.items) return asArray(section.items).length;
+      if (section.messages) return asArray(section.messages).length + (section.city ? 1 : 0);
+      if (section.groups) {
+        return asArray(section.groups).reduce((sum, group) => sum + asArray(group.rows || group.items).length, 0);
+      }
+      return 0;
+    }
+
+    function detail(resultId, text) {
+      return `${resultId}: ${text}`;
+    }
+
+    function chosenField(hit, fields) {
+      const found = fields.find((field) => hasText(hit[field.key]));
+      return found ? `${found.label}="${hit[found.key]}"` : "לא נמצא מקור נתונים";
+    }
+
+    function subtitleDecision(hit) {
+      const specialization = specializationText(hit);
+      const professionalization = professionalizationText(hit);
+      const languages = languagesText(hit);
+      return [
+        `specialization: ${specialization || "הושמט כי אין מקור"}`,
+        `professionalization: ${professionalization || "הושמט כי אין מקור"}`,
+        `languages: ${languages || "הושמט כי אין מקור"}`,
+      ].join(" | ");
+    }
+
+    function chipDecision(hit) {
+      const decisions = [];
+      decisions.push(hit.accessibilityBool === true ? `accessibility -> "${hit.accessibility || "נגיש"}"` : "accessibility הושמט כי accessibilityBool אינו true");
+      decisions.push(`shabanType=${hit.shabanType ?? "null"} -> ${shabanChips(hit).map((chip) => chip.text).join(" + ") || "ללא chip"}`);
+      decisions.push(hit.membershipStatusCode === "LIMITED" ? "membershipStatusCode=LIMITED -> לא מקבל חברים חדשים" : "לא נוצר chip הגבלת חברים");
+      return decisions.join(" | ");
+    }
+
+    function contactDecision(hit, result) {
+      const items = asArray(result.expandedCard.sections?.contacts?.items);
+      const displayTexts = items.map((item) => `${item.type}:${item.text}`).join(", ") || "לא נמצאו נתונים";
+      const rejected = asArray(hit.contacts).length - items.length;
+      const disclaimer = asArray(result.expandedCard.sections?.contacts?.messages).some((message) => message.type === "emailDisclaimer");
+      return `נלקח רק contactDetail לאחר trim; dedup לפי type+text; מיון לפי phone, appointments, fax, mobile, email, other. display=${displayTexts}; rejectedOrDedup=${Math.max(0, rejected)}; emailDisclaimer=${disclaimer ? "כן" : "לא"}`;
+    }
+
+    function scheduleDecision(hit, result) {
+      const rows = asArray(hit.schedules);
+      const groupedRows = Object.values(rows.reduce((acc, row) => {
+        if (!scheduleMap[Number(row.scheduleType)] || !validWeekDay(row.availabilityWeekDay)) return acc;
+        acc[Number(row.scheduleType)] = acc[Number(row.scheduleType)] || [];
+        acc[Number(row.scheduleType)].push(row);
+        return acc;
+      }, {}));
+      const validRows = groupedRows.flatMap(scheduleRowsForGroup);
+      const groups = asArray(result.expandedCard.sections?.schedule?.groups);
+      const groupText = groups.map((group) => `${group.type}:${asArray(group.rows).map((row) => `${row.dayText} ${row.hoursText}${row.notes ? ` (${row.notes})` : ""}`).join("; ")}`).join(" | ") || "לא נמצאו נתונים";
+      return `סינון BFF: רק scheduleType ממופה ויום 1-7; שעות תקינות מוצגות כ-HH:mm עד HH:mm; יום ללא שעות או יום חסר בתוך טווח הימים של אותה קבוצת שעות מוחזר כסגור, למעט שבת ללא שעות שמושמטת; frequencyDesc=שבועית אינו מוחזר ב-notes; ימים רצופים מתאחדים רק אם שעות/סגור והערה זהים. מקור=${rows.length}, תקינים=${validRows.length}, קבוצות לתצוגה=${groups.length}; פירוט קבוצות=${groupText}`;
+    }
+
+    function serviceDecision(hit, result) {
+      const section = result.expandedCard.sections?.services;
+      const items = asArray(section?.groups).flatMap((group) => asArray(group.items).map((item) => item.text));
+      return `טקסט טיפול נבחר לפי fallback sgTreatName -> cellTreatName -> hebrewText -> hebrewServiceName; אם קוד טיפול הופיע בתוך הטקסט הוא נוקה מהטקסט לתצוגה, אך אינו מוחזר ל־UI; קיבוץ לפי cptPubt. מקור=${asArray(hit.servTreats).length}, פריטים לתצוגה=${items.length}; פירוט פריטים=${items.join(", ") || "לא נמצאו נתונים"}`;
+    }
+
+    function expandedHeaderDecision(hit, result) {
+      const headerChips = asArray(result.expandedCard.header?.chips);
+      const chipText = headerChips.map((chip) => chip.text).join(", ");
+      const chipsDecision = headerChips.length
+        ? `header chips נבנו רק מתגיות שב״ן: ${chipText}`
+        : `לא נבנו header chips כי shabanType=${hit?.shabanType ?? "null"} אינו יוצר תגית שב״ן`;
+      const sectionNames = Object.keys(result.expandedCard.sections || {}).join(", ") || "לא נבנו אזורי תוכן להצגה";
+      return `header משתמש באותו title/avatar/subtitle של הכרטיס. ${chipsDecision}. sections נבנו רק עבור אזורים שבהם קיים תוכן להצגה: ${sectionNames}`;
+    }
+
+    function absenceDecision(hit, result) {
+      const absence = asArray(hit.absences)[0];
+      const displayItem = asArray(result.expandedCard.sections?.absences?.items)[0];
+      if (!absence || !displayItem) return `לא נבנה טקסט היעדרות כי לא חזרה היעדרות תקפה מה-Agent`;
+      const start = formatDateForDisplay(absence.absenceBdate);
+      const end = formatDateForDisplay(absence.absenceEdate);
+      const female = avatarType(hit.serviceProviderGender) === "doctorFemale";
+      const who = female ? "הרופאה לא נמצאת" : "הרופא לא נמצא";
+      const dateRule = !end || start === end ? `תאריך יחיד -> ${start}` : `טווח תאריכים -> ${start} עד ${end}`;
+      const sub = asArray(hit.substitutes)[0];
+      const subRule = sub && hasText(sub.subName) ? `נוסף ממלא מקום "${sub.subName}"${hasText(sub.subRemark) ? ` עם הערה "${sub.subRemark}"` : ""}` : "לא נוסף ממלא מקום";
+      const reasonRule = hasText(displayItem.reason) ? `reason הוצג בנפרד="${displayItem.reason}"` : "reason הושמט כי אין ערך מותר להצגה";
+      return `${who}; ${dateRule}; ${subRule}; ${reasonRule}; text="${displayItem.text}"`;
+    }
+
+    function buildDisplaySummary(agentResponse, results) {
+      const agentHits = asArray(agentResponse.hits);
+      const byId = new Map(agentHits.map((hit) => [hit.resultId, hit]));
+      const sectionCounts = results.reduce((acc, result) => {
+        Object.keys(result.expandedCard.sections || {}).forEach((key) => {
+          acc[key] = (acc[key] || 0) + 1;
+        });
+        return acc;
+      }, {});
+      const sourceContacts = agentHits.reduce((sum, hit) => sum + asArray(hit.contacts).length, 0);
+      const displayContacts = results.reduce((sum, result) => sum + countSectionRows(result.expandedCard.sections?.contacts), 0);
+      const sourceSchedules = agentHits.reduce((sum, hit) => sum + asArray(hit.schedules).length, 0);
+      const displayScheduleRows = results.reduce((sum, result) => sum + countSectionRows(result.expandedCard.sections?.schedule), 0);
+      const sourceTreats = agentHits.reduce((sum, hit) => sum + asArray(hit.servTreats).length, 0);
+      const displayServiceItems = results.reduce((sum, result) => sum + countSectionRows(result.expandedCard.sections?.services), 0);
+      const sourceAbsences = agentHits.reduce((sum, hit) => sum + asArray(hit.absences).length, 0);
+      const displayAbsences = results.reduce((sum, result) => sum + countSectionRows(result.expandedCard.sections?.absences), 0);
+      const collapsedChips = results.reduce((sum, result) => sum + asArray(result.collapsedCard.chips).length, 0);
+      const collapsedMessages = results.reduce((sum, result) => sum + asArray(result.collapsedCard.messages).length, 0);
+      const displaySummary = {
+        sourceHits: agentHits.length,
+        finalResults: results.length,
+        operations: [
+          {
+            title: "בניית תוצאות לתצוגה",
+            value: `${results.length} תוצאות לתצוגה נבנו מתוך ${agentHits.length} תוצאות Agent`,
+            details: results.map((result) => {
+              const hit = byId.get(result.resultId);
+              return detail(result.resultId, `title נקבע לפי fallback serviceProviderName -> serviceName. נבחר ${chosenField(hit || {}, [{ key: "serviceProviderName", label: "serviceProviderName" }, { key: "serviceName", label: "serviceName" }])}. avatarType נקבע לפי serviceProviderGender="${hit?.serviceProviderGender ?? "null"}" -> ${result.collapsedCard.avatarType}`);
+            }),
+          },
+          {
+            title: "בניית כרטיס תוצאה",
+            value: `${collapsedChips} chips, ${collapsedMessages} messages`,
+            details: results.map((result) => {
+              const hit = byId.get(result.resultId);
+              const lines = asArray(result.collapsedCard.subtitleLines).map((line) => `${line.type}="${line.text}"`).join(", ") || "לא נמצאו נתונים";
+              const messages = asArray(result.collapsedCard.messages).map((message) => `${message.type}="${message.text}"`).join(", ") || "לא נמצאו נתונים";
+              return detail(result.resultId, `subtitleLines: ${subtitleDecision(hit || {})}. בפועל: ${lines}. chips: ${chipDecision(hit || {})}. messages: remark10 והיעדרות נכנסים ל-collapsed messages אם יש טקסט; בפועל: ${messages}. locationText נלקח מ-cityName="${result.collapsedCard.locationText || "null"}"`);
+            }),
+          },
+          {
+            title: "בניית פרטי תוצאה מורחבים",
+            value: Object.entries(sectionCounts).map(([key, count]) => `${key}: ${count}`).join(", ") || "לא נבנו אזורי תוכן להצגה",
+            details: results.map((result) => {
+              const hit = byId.get(result.resultId);
+              return detail(result.resultId, expandedHeaderDecision(hit, result));
+            }),
+          },
+          {
+            title: "בניית אמצעי קשר",
+            value: `${displayContacts} פריטי קשר לתצוגה מתוך ${sourceContacts} רשומות Agent`,
+            details: results.map((result) => {
+              const hit = byId.get(result.resultId);
+              return detail(result.resultId, contactDecision(hit || {}, result));
+            }),
+          },
+          {
+            title: "בניית שעות פעילות",
+            value: `${displayScheduleRows} שורות תצוגה מתוך ${sourceSchedules} שורות Agent`,
+            details: results.map((result) => {
+              const hit = byId.get(result.resultId);
+              return detail(result.resultId, scheduleDecision(hit || {}, result));
+            }),
+          },
+          {
+            title: "בניית ניתוחים וטיפולים",
+            value: `${displayServiceItems} פריטי טיפול לתצוגה מתוך ${sourceTreats} רשומות Agent`,
+            details: results.map((result) => {
+              const hit = byId.get(result.resultId);
+              return detail(result.resultId, serviceDecision(hit || {}, result));
+            }),
+          },
+          {
+            title: "בניית היעדרויות וממלאי מקום",
+            value: `${displayAbsences} פריטי היעדרות לתצוגה מתוך ${sourceAbsences} היעדרויות Agent`,
+            details: results.map((result) => {
+              const hit = byId.get(result.resultId);
+              return detail(result.resultId, absenceDecision(hit || {}, result));
+            }),
+          },
+        ],
+      };
+      state.displaySummary = displaySummary;
+      return displaySummary;
+    }
+
+    function buildDisplayResponse(agentResponse) {
+      const results = asArray(agentResponse.hits).map(buildDisplayResult).filter(Boolean);
+      const response = {
+        metadata: {
+          requestId: agentResponse.requestId,
+          generatedAt: new Date().toISOString(),
+          client: { clientType: "service_guide", channel: "online" },
+          businessRules: { source: "bff", version: BFF_RULESET_VERSION },
+        },
+        totalResults: results.length,
+        results,
+      };
+      buildDisplaySummary(agentResponse, results);
+      return response;
+    }
+
+    function runFlow() {
+      state.errors = [];
+      state.openCards = new Set();
+      state.visibleCount = 10;
+      state.orchestratorSummary = null;
+      state.displaySummary = null;
+      state.jsonVisible = {};
+      state.previewPanelOpen = false;
+      state.explanationOpen = false;
+      const uiRequest = buildUiRequest();
+      const missingQuery = !uiRequest.query;
+      if (missingQuery) state.errors.push("יש להזין טקסט לחיפוש");
+      if (!state.searchJsonText.trim()) state.errors.push("יש להעלות פלט מנוע חיפוש");
+      let parsedSearchJson = null;
+      try {
+        parsedSearchJson = state.searchJsonText.trim() ? JSON.parse(state.searchJsonText) : null;
+      } catch (error) {
+        state.errors.push(`JSON לא תקין: ${error.message}`);
+      }
+      if (parsedSearchJson && !hasValidHitsPath(parsedSearchJson)) {
+        state.errors.push("מבנה פלט מנוע החיפוש חסר את הנתיב data.service_guide.hits.");
+      }
+      if (!state.errors.length) {
+        const agentRequest = buildAgentRequest(uiRequest);
+        state.searchJson = parsedSearchJson;
+        state.flow = { ui: uiRequest, agentRequest };
+        const agentResponse = buildAgentResponse(state.searchJson, agentRequest);
+        const displayResponse = buildDisplayResponse(agentResponse);
+        state.flow.searchResponse = state.searchJson;
+        state.flow.agentResponse = agentResponse;
+        state.flow.displayResponse = displayResponse;
+        state.selectedStep = "preview";
+      } else {
+        state.flow = {};
+        state.searchJson = parsedSearchJson;
+        state.orchestratorSummary = null;
+        state.displaySummary = null;
+        state.selectedStep = missingQuery ? "ui" : "searchResponse";
+      }
+      render();
+    }
+
+    function resetFlow() {
+      state.fileName = "";
+      state.searchJsonText = "";
+      state.searchJson = null;
+      state.flow = {};
+      state.orchestratorSummary = null;
+      state.displaySummary = null;
+      state.errors = [];
+      state.openCards = new Set();
+      state.visibleCount = 10;
+      state.jsonVisible = {};
+      state.previewPanelOpen = false;
+      state.explanationOpen = false;
+      state.selectedStep = "ui";
+      els.searchText.value = "";
+      els.environment.value = "false";
+      els.jsonFile.value = "";
+      render();
+    }
+
+    function renderRunStatus() {
+      const total = state.flow.displayResponse?.totalResults;
+      const label = state.errors.length
+        ? "נדרש להשלים קלט"
+        : (total === undefined ? "טרם הופעל הסימולטור" : "ההרצה הושלמה");
+      const meta = total === undefined ? "טרם נבנו תוצאות לתצוגה" : `${total} תוצאות לתצוגה`;
+      els.runStatus.innerHTML = `
+        <div class="run-state">
+          <span class="run-state-label">${escapeHtml(label)}</span>
+          <span class="run-state-meta">${escapeHtml(meta)}</span>
+        </div>
+      `;
+      els.fileNamePill.textContent = state.fileName || "לא הועלה פלט מנוע חיפוש";
+      els.rawSourcePill.hidden = !includeRawSource();
+      els.rawSourcePill.textContent = includeRawSource() ? "Test / QA כולל rawSource" : "";
+    }
+
+    function renderHeaderErrors() {
+      if (!state.errors.length) {
+        els.headerErrors.hidden = true;
+        els.headerErrors.innerHTML = "";
+        return;
+      }
+      els.headerErrors.hidden = false;
+      els.headerErrors.innerHTML = state.errors.map((error) => `<div class="error-item">${escapeHtml(error)}</div>`).join("");
+    }
+
+    function stepStatus(id) {
+      if (id === "ui") return state.flow.ui ? { text: "נבנה", state: "done" } : { text: "ממתין להפעלה", state: "waiting" };
+      if (id === "agentRequest") return state.flow.agentRequest ? { text: "נבנה", state: "done" } : { text: "ממתין להפעלה", state: "waiting" };
+      if (id === "searchResponse") {
+        if (!state.searchJsonText) return { text: "נדרש פלט מנוע חיפוש", state: "needs-input" };
+        if (state.searchJson && !hasValidHitsPath(state.searchJson)) return { text: "מבנה לא תקין", state: "error" };
+        return state.searchJson ? { text: "פלט נטען", state: "done" } : { text: "JSON לא תקין", state: "error" };
+      }
+      if (id === "orchestrator") return state.orchestratorSummary ? { text: "עיבוד בוצע", state: "done" } : { text: "ממתין להפעלה", state: "waiting" };
+      if (id === "agentResponse") return state.flow.agentResponse ? { text: "נבנה", state: "done" } : { text: "ממתין להפעלה", state: "waiting" };
+      if (id === "displayResponse") return state.flow.displayResponse ? { text: "נבנה", state: "done" } : { text: "ממתין להפעלה", state: "waiting" };
+      if (id === "preview") return state.flow.displayResponse ? { text: "מוצג", state: "done" } : { text: "ממתין להפעלה", state: "waiting" };
+      return { text: "", state: "waiting" };
+    }
+
+    function renderStepper() {
+      els.stepper.innerHTML = steps.map((step) => `
+        <button class="step ${state.selectedStep === step.id ? "active" : ""}" type="button" onclick="setStep('${step.id}')">
+          <div>
+            <div class="step-name">${escapeHtml(step.name)}</div>
+          </div>
+          ${(() => {
+            const status = stepStatus(step.id);
+            return `<span class="step-state ${escapeHtml(status.state)}">${escapeHtml(status.text)}</span>`;
+          })()}
+        </button>
+      `).join("");
+    }
+
+    function renderJsonActions(target) {
+      const data = dataForTarget(target);
+      if (data === undefined || data === null) return "";
+      const visible = !!state.jsonVisible[target];
+      const secondary = visible && ["agentResponse", "displayResponse"].includes(target)
+        ? `
+          <button class="button" type="button" onclick="copyJson('${target}')">העתק JSON</button>
+          <button class="button" type="button" onclick="downloadSimulation()">הורד תוצר סימולציה</button>
+        `
+        : "";
+      return `
+        <button class="button ghost" type="button" onclick="toggleJson('${target}')">${visible ? "הסתר JSON" : "הצג JSON"}</button>
+        ${secondary}
+      `;
+    }
+
+    function jsonPanel(target, data) {
+      if (data === undefined || data === null) return "";
+      if (!state.jsonVisible[target]) return "";
+      return `<pre class="json-box">${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
+    }
+
+    function renderSearchInput() {
+      return `
+        <div class="field">
+          <label for="searchJsonInput">פלט מנוע חיפוש</label>
+          <textarea id="searchJsonInput" oninput="updateSearchJsonText(this.value)" placeholder="{}">${escapeHtml(state.searchJsonText)}</textarea>
+        </div>
+      `;
+    }
+
+    function renderExplanation(rows) {
+      return `
+        <div class="explain-card">
+          ${rows.map((row) => `
+            <div class="explain-row">
+              <div class="explain-label">${escapeHtml(row.label)}</div>
+              <div class="explain-text">${escapeHtml(row.text)}</div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function splitTextSegments(text) {
+      return String(text ?? "")
+        .replace(/\.\s+(?=[א-תA-Za-z])/g, ".\n")
+        .split(/;\s*|\n+/)
+        .map((segment) => segment.trim())
+        .filter(Boolean);
+    }
+
+    function renderSplitText(text) {
+      const segments = splitTextSegments(text);
+      if (segments.length <= 1) return escapeHtml(String(text ?? ""));
+      return `<span class="split-lines">${segments.map((segment) => `<span class="split-line">${escapeHtml(segment)}</span>`).join("")}</span>`;
+    }
+
+    function renderSearchResponseStatus() {
+      if (!state.searchJsonText.trim()) {
+        return renderExplanation([
+          { label: "מה נכנס", text: "טרם הועלה פלט מנוע חיפוש" },
+          { label: "מה בוצע", text: "ניתן להעלות קובץ או להדביק JSON של פלט מנוע החיפוש" },
+          { label: "מה יצא", text: "ההרצה תמשיך רק לאחר טעינת JSON תקין" },
+        ]);
+      }
+      if (!state.searchJson) return `<div class="empty">JSON לא תקין</div>`;
+      const hits = Array.isArray(state.searchJson?.data?.service_guide?.hits)
+        ? state.searchJson.data.service_guide.hits.length
+        : 0;
+      return renderExplanation([
+        { label: "מה נכנס", text: "פלט מנוע החיפוש נטען" },
+        { label: "מה בוצע", text: "נבדק שהנתיב data.service_guide.hits קיים ושהוא מערך" },
+        { label: "מה יצא", text: `נמצאו ${hits} תוצאות מקור` },
+      ]);
+    }
+
+    function renderOrchestratorSummary() {
+      if (!state.orchestratorSummary) return `<div class="empty">סיכום פעולות העיבוד יוצג לאחר הרצה תקינה.</div>`;
+      return `
+        ${renderExplanation([
+          { label: "מה נכנס", text: "התקבל פלט מנוע החיפוש לעיבוד" },
+          { label: "מה בוצע", text: "בוצעו פעולות העיבוד המוגדרות באורקסטרטור" },
+          { label: "מה יצא", text: `עברו לעיבוד הבא ${state.orchestratorSummary.finalHits} מתוך ${state.orchestratorSummary.sourceHits} תוצאות מקור` },
+        ])}
+        <div class="summary-metrics">
+          <div class="metric">
+            <div class="metric-value">${state.orchestratorSummary.sourceHits}</div>
+            <div class="metric-label">תוצאות מקור</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">${state.orchestratorSummary.finalHits}</div>
+            <div class="metric-label">תוצאות שעברו ל־Agent</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">${state.orchestratorSummary.rejectedByInitiator}</div>
+            <div class="metric-label">נפסלו בגלל initiatorCode</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">${state.orchestratorSummary.rejectedWithoutResultId}</div>
+            <div class="metric-label">נפסלו ללא מזהה תוצאה</div>
+          </div>
+        </div>
+        <div class="summary-list">
+          ${state.orchestratorSummary.operations.map((item) => `
+            <div class="summary-item">
+              <div class="item-title">${escapeHtml(item.title)}</div>
+              <div class="item-text"><span class="item-result-label">מה יצא: </span>${renderSplitText(item.value)}</div>
+              ${asArray(item.details).length ? `
+                <details class="technical-details">
+                  <summary>פירוט טכני</summary>
+                  <div class="kv">
+                    ${asArray(item.details).map((detail) => `
+                      <div class="kv-row">
+                        <div class="kv-key">פירוט</div>
+                        <div class="kv-value explain">${renderSplitText(detail)}</div>
+                      </div>
+                    `).join("")}
+                  </div>
+                </details>
+              ` : ""}
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function renderDisplaySummary() {
+      if (!state.displaySummary) return `<div class="empty">פירוט בניית תגובת BFF ל־UI יוצג לאחר הרצה תקינה.</div>`;
+      return `
+        ${renderExplanation([
+          { label: "מה נכנס", text: "התקבלה תגובת Agent" },
+          { label: "מה בוצע", text: "נבנו רכיבי התצוגה שה־UI צריך לרנדר" },
+          { label: "מה יצא", text: `נוצר ServiceGuideDisplayResponse עם ${state.displaySummary.finalResults} תוצאות לתצוגה` },
+        ])}
+        <div class="summary-metrics">
+          <div class="metric">
+            <div class="metric-value">${state.displaySummary.sourceHits}</div>
+            <div class="metric-label">תוצאות שהתקבלו מה-Agent</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">${state.displaySummary.finalResults}</div>
+            <div class="metric-label">תוצאות שנבנו לתצוגה</div>
+          </div>
+        </div>
+        <div class="summary-list">
+          ${state.displaySummary.operations.map((item) => `
+            <div class="summary-item">
+              <div class="item-title">${escapeHtml(item.title)}</div>
+              <div class="item-text"><span class="item-result-label">מה יצא: </span>${renderSplitText(item.value)}</div>
+              ${asArray(item.details).length ? `
+                <details class="technical-details">
+                  <summary>פירוט טכני</summary>
+                  <div class="kv">
+                    ${asArray(item.details).map((detail) => `
+                      <div class="kv-row">
+                        <div class="kv-key">פירוט</div>
+                        <div class="kv-value explain">${renderSplitText(detail)}</div>
+                      </div>
+                    `).join("")}
+                  </div>
+                </details>
+              ` : ""}
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function currentStepData() {
+      if (state.selectedStep === "ui") return state.flow.ui;
+      if (state.selectedStep === "agentRequest") return state.flow.agentRequest;
+      if (state.selectedStep === "searchResponse") return state.searchJson || null;
+      if (state.selectedStep === "agentResponse") return state.flow.agentResponse;
+      if (state.selectedStep === "displayResponse" || state.selectedStep === "preview") return state.flow.displayResponse;
+      return null;
+    }
+
+    function dataForTarget(target) {
+      if (target === "ui") return state.flow.ui;
+      if (target === "agentRequest") return state.flow.agentRequest;
+      if (target === "searchResponse") return state.searchJson || null;
+      if (target === "agentResponse") return state.flow.agentResponse;
+      if (target === "displayResponse") return state.flow.displayResponse;
+      if (target === "orchestrator") return state.orchestratorSummary;
+      return null;
+    }
+
+    function renderStepIntro(id) {
+      if (id === "ui") {
+        if (!state.flow.ui) {
+          return renderExplanation([
+            { label: "מה נכנס", text: "טקסט החיפוש ייקרא בעת הפעלה" },
+            { label: "מה בוצע", text: "טרם נבנתה בקשת ServiceGuideSearchRequest" },
+            { label: "מה יצא", text: "בקשת החיפוש תיווצר לאחר לחיצה על הפעל" },
+          ]);
+        }
+        return renderExplanation([
+          { label: "מה נכנס", text: "התקבל טקסט החיפוש שהוזן במסך" },
+          { label: "מה בוצע", text: "נבנתה בקשת ServiceGuideSearchRequest לפי כללי ה־UI" },
+          { label: "מה יצא", text: "נוצרה בקשת חיפוש לשליחה ל־BFF" },
+        ]);
+      }
+      if (id === "agentRequest") {
+        if (!state.flow.agentRequest) {
+          return renderExplanation([
+            { label: "מה נכנס", text: "בקשת החיפוש מה־UI תתקבל לאחר הפעלה" },
+            { label: "מה בוצע", text: "טרם נבנתה בקשת ServiceGuideSearchAgentRequest" },
+            { label: "מה יצא", text: "בקשת Agent תיווצר רק לאחר לחיצה על הפעל והרצה תקינה" },
+          ]);
+        }
+        return renderExplanation([
+          { label: "מה נכנס", text: "התקבלה בקשת החיפוש מה־UI" },
+          { label: "מה בוצע", text: "נוצר requestId, pageSize נקבע ל־50 ו־includeRawSource נקבע לפי הסביבה" },
+          { label: "מה יצא", text: "נוצרה בקשת ServiceGuideSearchAgentRequest לשליחה ל־Agent" },
+        ]);
+      }
+      if (id === "agentResponse") {
+        if (!state.flow.agentResponse) return `<div class="empty">תגובת Agent תוצג לאחר הרצה תקינה.</div>`;
+        return renderExplanation([
+          { label: "מה נכנס", text: "התקבלו תוצאות מעיבוד האורקסטרטור" },
+          { label: "מה בוצע", text: "נבנתה תגובת Agent בהתאם לחוזה ServiceGuideSearchAgentResponse" },
+          { label: "מה יצא", text: "נוצרה תגובת ServiceGuideSearchAgentResponse" },
+        ]);
+      }
+      return "";
+    }
+
+    function previewToggleButton() {
+      return `<button class="button ghost" type="button" onclick="togglePreviewPanel()">${state.previewPanelOpen ? "הסתר תצוגה מקדימה" : "הצג תצוגה מקדימה"}</button>`;
+    }
+
+    function explanationToggleButton() {
+      return `<button class="button ghost" type="button" onclick="toggleExplanationPanel()">${state.explanationOpen ? "הסתר הסבר" : "הצג הסבר"}</button>`;
+    }
+
+    function renderWorkspace() {
+      const step = steps.find((item) => item.id === state.selectedStep) || steps[0];
+      els.workspaceTitle.textContent = step.name;
+      els.workspaceSubtitle.textContent = step.sub;
+      els.workspaceSubtitle.hidden = !step.sub;
+      const isPreviewStep = state.selectedStep === "preview";
+      els.workspaceShell.className = `workspace ${isPreviewStep ? (state.explanationOpen ? "explanation-visible" : "preview-full") : (state.previewPanelOpen ? "" : "preview-hidden")}`.trim();
+      const showJsonToggle = ["ui", "agentRequest", "agentResponse", "displayResponse"].includes(state.selectedStep);
+      els.workspaceActions.innerHTML = isPreviewStep
+        ? ""
+        : `${previewToggleButton()}${showJsonToggle ? renderJsonActions(state.selectedStep) : ""}`;
+      els.previewActions.innerHTML = isPreviewStep ? explanationToggleButton() : "";
+      if (state.selectedStep === "searchResponse") {
+        els.workspaceBody.innerHTML = `${renderSearchInput()}${renderSearchResponseStatus()}`;
+        return;
+      }
+      if (state.selectedStep === "orchestrator") {
+        els.workspaceBody.innerHTML = renderOrchestratorSummary();
+        return;
+      }
+      if (state.selectedStep === "displayResponse") {
+        els.workspaceBody.innerHTML = `${renderDisplaySummary()}${jsonPanel("displayResponse", currentStepData())}`;
+        return;
+      }
+      if (state.selectedStep === "preview") {
+        els.workspaceBody.innerHTML = renderExplanation([
+          { label: "מה נכנס", text: "מוצגת הדמיה של מסך התוצאות" },
+          { label: "מה בוצע", text: "התצוגה המקדימה קוראת רק את ServiceGuideDisplayResponse. היא אינה מפרשת קודים, אינה מסננת תוצאות, ואינה בונה טקסטים עסקיים מחדש." },
+          { label: "מה יצא", text: "כך התוצאות צפויות להיראות ב־UI" },
+        ]);
+        return;
+      }
+      els.workspaceBody.innerHTML = `${renderStepIntro(state.selectedStep)}${jsonPanel(state.selectedStep, currentStepData())}`;
+    }
+
+    function renderTextLines(lines) {
+      return asArray(lines).map((line) => `<div>${escapeHtml(line.text)}</div>`).join("");
+    }
+
+    function chipClass(chip) {
+      if (["accessibility"].includes(chip.type)) return "search-result-chip green";
+      if (String(chip.type || "").startsWith("shaban")) return "search-result-chip shaban";
+      return "search-result-chip";
+    }
+
+    function renderChips(chips) {
+      return asArray(chips).map((chip) => `<span class="${chipClass(chip)}">${chip.type === "accessibility" ? icon("accessibility") : ""}${escapeHtml(chip.text)}</span>`).join("");
+    }
+
+    function renderMessages(messages) {
+      return asArray(messages).map((message) => `<div class="message">${escapeHtml(message.text)}</div>`).join("");
+    }
+
+    function renderContactValue(item) {
+      const text = escapeHtml(item.text || "");
+      if (item.actionType === "copy" && hasText(item.actionValue)) {
+        return `<a class="contact-action" href="#" onclick="copyContactValue(event, '${escapeJs(item.actionValue)}')">${text}</a>`;
+      }
+      if (item.actionType === "mailto" && hasText(item.actionUri)) {
+        return `<a class="contact-action" href="${escapeHtml(item.actionUri)}" onclick="event.stopPropagation()">${text}</a>`;
+      }
+      return `<span class="contact-text">${text}</span>`;
+    }
+
+    function renderContactItem(item) {
+      return `
+        <div class="contact-row">
+          <span class="contact-text">${escapeHtml(item.label || "")}</span>
+          ${renderContactValue(item)}
+          ${item.reason ? `<span class="contact-text">- ${escapeHtml(item.reason)}</span>` : ""}
+        </div>
+      `;
+    }
+
+    function avatarLetter(type) {
+      if (type === "doctorMale") return "ד";
+      if (type === "doctorFemale") return "ר";
+      return "";
+    }
+
+    function icon(type) {
+      const iconFiles = {
+        accessibility: "accessibility-symbol-svgrepo-com.svg",
+        locationPin: "location-pin-alt-1-svgrepo-com.svg",
+        doctorMale: "doctor-male-svgrepo-com.svg",
+        doctorFemale: "doctor-female-svgrepo-com.svg",
+        doctorDefault: "doctor-male-svgrepo-com.svg",
+      };
+      const fileSrc = iconFiles[type];
+      if (fileSrc) return `<img class="preview-icon" src="${fileSrc}" alt="" aria-hidden="true" loading="lazy" />`;
+      const icons = {
+        accessibility: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IS0tIFVwbG9hZGVkIHRvOiBTVkcgUmVwbywgd3d3LnN2Z3JlcG8uY29tLCBHZW5lcmF0b3I6IFNWRyBSZXBvIE1peGVyIFRvb2xzIC0tPg0KPHN2ZyB3aWR0aD0iODAwcHgiIGhlaWdodD0iODAwcHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4NCjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNOSA2LjgyOTU0QzEwLjE2NTIgNi40MTc3IDExIDUuMzA2NDYgMTEgNC4wMDAyNEMxMSAyLjM0MzM5IDkuNjU2ODYgMS4wMDAyNCA4IDEuMDAwMjRDNi4zNDMxNSAxLjAwMDI0IDUgMi4zNDMzOSA1IDQuMDAwMjRDNSA1LjMwNjQ2IDUuODM0ODEgNi40MTc3IDcgNi44Mjk1NFYxMi4wMDAyQzcgMTMuNjU3MSA4LjM0MzE1IDE1LjAwMDIgMTAgMTUuMDAwMkgxNC45Mjk2QzE1LjI2NCAxNS4wMDAyIDE1LjU3NjIgMTUuMTY3MyAxNS43NjE3IDE1LjQ0NTVMMTguNDkxMyAxOS41NEMxOS4xOTE0IDIwLjU5MDEgMjAuNjc3MiAyMC43MzczIDIxLjU2OTYgMTkuODQ0OEwyMi43MDcxIDE4LjcwNzRDMjMuMDk3NiAxOC4zMTY4IDIzLjA5NzYgMTcuNjgzNyAyMi43MDcxIDE3LjI5MzFDMjIuMzE2NiAxNi45MDI2IDIxLjY4MzQgMTYuOTAyNiAyMS4yOTI5IDE3LjI5MzFMMjAuMTU1NCAxOC40MzA2TDE3LjQyNTggMTQuMzM2MUMxNi44Njk0IDEzLjUwMTUgMTUuOTMyNyAxMy4wMDAyIDE0LjkyOTYgMTMuMDAwMkgxMEM5LjQ0NzcyIDEzLjAwMDIgOSAxMi41NTI1IDkgMTIuMDAwMlYxMS4wMDAySDE1QzE1LjU1MjMgMTEuMDAwMiAxNiAxMC41NTI1IDE2IDEwLjAwMDJDMTYgOS40NDc5NiAxNS41NTIzIDkuMDAwMjUgMTUgOS4wMDAyNUg5VjYuODI5NTRaTTggNS4xMDc1OEM3LjM4ODQ0IDUuMTA3NTggNi44OTI2NyA0LjYxMTgxIDYuODkyNjcgNC4wMDAyNEM2Ljg5MjY3IDMuMzg4NjggNy4zODg0NCAyLjg5MjkxIDggMi44OTI5MUM4LjYxMTU3IDIuODkyOTEgOS4xMDczNCAzLjM4ODY4IDkuMTA3MzQgNC4wMDAyNEM5LjEwNzM0IDQuNjExODEgOC42MTE1NyA1LjEwNzU4IDggNS4xMDc1OFoiIGZpbGw9IiMwRjBGMEYiLz4NCjxwYXRoIGQ9Ik00LjYzMjggOS4wNzQxNEM1LjEwNTE3IDguNzg5ODcgNS42OTczOCA5LjAyNzkgNS45MTY0NSA5LjUzMzgxQzYuMTM1NTIgMTAuMDM5NyA1Ljg5NjA0IDEwLjYyMDUgNS40Mzc5NSAxMC45MjcyQzQuOTI5OTMgMTEuMjY3MyA0LjQ4MDE4IDExLjY5MTEgNC4xMDg4MiAxMi4xODI2QzMuNTM1OTggMTIuOTQwOCAzLjE2OTIyIDEzLjgzNDUgMy4wNDQyNSAxNC43NzY1QzIuOTE5MjggMTUuNzE4NSAzLjA0MDM2IDE2LjY3NjggMy4zOTU3IDE3LjU1ODJDMy43NTEwMyAxOC40Mzk1IDQuMzI4NTIgMTkuMjEzOCA1LjA3MTk0IDE5LjgwNThDNS44MTUzNSAyMC4zOTc3IDYuNjk5MzcgMjAuNzg3IDcuNjM3OTEgMjAuOTM1OUM4LjU3NjQ2IDIxLjA4NDcgOS41Mzc1NiAyMC45ODggMTAuNDI3NiAyMC42NTUyQzExLjMxNzcgMjAuMzIyMyAxMi4xMDY1IDE5Ljc2NDcgMTIuNzE3MSAxOS4wMzY2QzEzLjExMjkgMTguNTY0NSAxMy40MjUxIDE4LjAzMTMgMTMuNjQyOCAxNy40NkMxMy44MzkxIDE2Ljk0NDggMTQuMzUxNCAxNi41ODEzIDE0Ljg5MzYgMTYuNjgxNUMxNS40MzU3IDE2Ljc4MTYgMTUuODAwNCAxNy4zMDU0IDE1LjYyOTEgMTcuODI5NUMxNS4zMzI2IDE4LjczNzIgMTQuODY0NCAxOS41ODMgMTQuMjQ2OCAyMC4zMTk0QzEzLjQxNDcgMjEuMzExNyAxMi4zMzk5IDIyLjA3MTYgMTEuMTI2OSAyMi41MjUyQzkuOTEzOTQgMjIuOTc4NyA4LjYwNDIgMjMuMTEwNSA3LjMyNTE4IDIyLjkwNzdDNi4wNDYxNyAyMi43MDQ4IDQuODQxNDggMjIuMTc0MiAzLjgyODM4IDIxLjM2NzZDMi44MTUyOCAyMC41NjEgMi4wMjgzMSAxOS41MDU4IDEuNTQ0MDcgMTguMzA0N0MxLjA1OTgzIDE3LjEwMzcgMC44OTQ4MzYgMTUuNzk3NyAxLjA2NTE0IDE0LjUxMzlDMS4yMzU0NSAxMy4yMzAyIDEuNzM1MjUgMTIuMDEyNCAyLjUxNTg5IDEwLjk3OTFDMy4wOTUyMyAxMC4yMTIzIDMuODE0NTkgOS41NjY1NCA0LjYzMjggOS4wNzQxNFoiIGZpbGw9IiMwRjBGMEYiLz4NCjwvc3ZnPg==",
+        doctorDefault: "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSI+PGNpcmNsZSBjeD0iMjQiIGN5PSIxNSIgcj0iOCIgc3Ryb2tlPSIjMzMzMzMzIiBzdHJva2Utd2lkdGg9IjMiLz48cGF0aCBkPSJNMTAgNDJjMC04IDYuMy0xNCAxNC0xNHMxNCA2IDE0IDE0IiBzdHJva2U9IiMzMzMzMzMiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+PHBhdGggZD0iTTI0IDMydjhNMjAgMzZoOCIgc3Ryb2tlPSIjMzMzMzMzIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPg==",
+        locationPin: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IS0tIFVwbG9hZGVkIHRvOiBTVkcgUmVwbywgd3d3LnN2Z3JlcG8uY29tLCBHZW5lcmF0b3I6IFNWRyBSZXBvIE1peGVyIFRvb2xzIC0tPg0KPHN2ZyB3aWR0aD0iODAwcHgiIGhlaWdodD0iODAwcHgiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4NCjxwYXRoIGQ9Ik0xMiAyMUMxNS41IDE3LjQgMTkgMTQuMTc2NCAxOSAxMC4yQzE5IDYuMjIzNTUgMTUuODY2IDMgMTIgM0M4LjEzNDAxIDMgNSA2LjIyMzU1IDUgMTAuMkM1IDE0LjE3NjQgOC41IDE3LjQgMTIgMjFaIiBzdHJva2U9IiMwMDAwMDAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+DQo8cGF0aCBkPSJNMTIgMTJDMTMuMTA0NiAxMiAxNCAxMS4xMDQ2IDE0IDEwQzE0IDguODk1NDMgMTMuMTA0NiA4IDEyIDhDMTAuODk1NCA4IDEwIDguODk1NDMgMTAgMTBDMTAgMTEuMTA0NiAxMC44OTU0IDEyIDEyIDEyWiIgc3Ryb2tlPSIjMDAwMDAwIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPg0KPC9zdmc+",
+        doctorMale: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IS0tIFVwbG9hZGVkIHRvOiBTVkcgUmVwbywgd3d3LnN2Z3JlcG8uY29tLCBHZW5lcmF0b3I6IFNWRyBSZXBvIE1peGVyIFRvb2xzIC0tPgo8c3ZnIHdpZHRoPSI4MDBweCIgaGVpZ2h0PSI4MDBweCIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTE2LjYxMzkgNy40NTA0N0MxNi42MjM0IDcuNDA3MDYgMTYuNjMzNiA3LjM1ODQ2IDE2LjY0NTUgNy4zMDE4M0MxNi42NjA0IDcuMjMxMDUgMTYuNjc3OSA3LjE0NzcyIDE2LjcwMDEgNy4wNDYyN0MxNi44MDM2IDYuNTcyNDcgMTYuOTczNiA1Ljg3OTkzIDE3LjMyNTYgNS4yMDg1NkMxNy42ODM2IDQuNTI1NzIgMTguMjUwNCAzLjgyNjE4IDE5LjE1NzMgMy4zOTkyMkMyMC4wNjMgMi45NzI4NSAyMS4xODYzIDIuODc1NjIgMjIuNTUxIDMuMTY3NThDMjIuODYzOCAzLjIzNDUgMjMuMjgwNyAzLjMwMTk4IDIzLjc2OTQgMy4zODExQzI1LjI3MTMgMy42MjQyMyAyNy40NTIgMy45NzcyNSAyOS4zNzg5IDQuNzYxNjlDMzIuMDI5MyA1Ljg0MDYxIDM0LjU1NjYgNy44NTQ4MyAzNC44MzEyIDExLjc0MDJDMzUuMDQ2MSAxNC43ODE2IDM1LjA1ODcgMTYuNDQyMyAzNC44NTIxIDE3LjYwOTRDMzQuNjc1MyAxOC42MDc3IDM0LjMyNjEgMTkuMjU2OCAzMy45NTAzIDE5Ljk1NTNDMzMuODY3IDIwLjExMDIgMzMuNzgyMyAyMC4yNjc2IDMzLjY5NzkgMjAuNDMxN0MzMy42MzIgMjAuNTYgMzMuNDIwMSAyMC45MDA0IDMyLjk1OTUgMjAuOTgzNkMzMi41MTE4IDIxLjA2NDUgMzIuMjAwMSAyMC44MzI5IDMyLjEwMTMgMjAuNzQ5MUMzMS45MDg2IDIwLjU4NTcgMzEuODAzMSAyMC4zNzQ3IDMxLjc2OTQgMjAuMzA3M0wzMS43NjcyIDIwLjMwMjlDMzEuNjY2NiAyMC4xMDIxIDMxLjU2NzYgMTkuODI5MSAzMS40NzcyIDE5LjU1NjZDMzEuMjg4OCAxOC45ODggMzEuMDY3NiAxOC4yMDA5IDMwLjg1OTYgMTcuNDIwM0MzMC42NTAzIDE2LjYzNDQgMzAuNDQ5MyAxNS44MzUyIDMwLjMwMDggMTUuMjMzN0MzMC4yODU1IDE1LjE3MTUgMzAuMjcwNyAxNS4xMTE0IDMwLjI1NjUgMTUuMDUzNkMzMC4yMjk4IDE1LjA1NDQgMzAuMjAyNSAxNS4wNTUyIDMwLjE3NDcgMTUuMDU1OUMyOS41NjAxIDE1LjA3MDcgMjguNjg4NCAxNS4wNDQ5IDI3LjYyNDUgMTQuODg3N0MyNS41NTk3IDE0LjU4MjUgMjIuNzc2OSAxMy43ODMgMTkuNzU2MyAxMS44MzUyQzE5LjUwMDcgMTEuOTA0NSAxOS4xNjE5IDEyLjEzNjYgMTguNzQ5IDEyLjcxMDlDMTguMjM3MyAxMy40MjI3IDE3Ljc4MDkgMTQuNDM3NSAxNy4zOTc5IDE1LjUzMDFDMTcuMDE5NyAxNi42MDkzIDE2LjczNDEgMTcuNzAyNiAxNi41NDI1IDE4LjUzMTdDMTYuNDQ3MSAxOC45NDQ3IDE2LjM3NTggMTkuMjg4NyAxNi4zMjg1IDE5LjUyODJDMTYuMzA0OSAxOS42NDc4IDE2LjI4NzQgMTkuNzQxMiAxNi4yNzU5IDE5LjgwMzhMMTYuMjYzMiAxOS44NzQxTDE2LjI2MDIgMTkuODkwOEwxNi4yNTk2IDE5Ljg5NDRMMTUuODAyMiAyMi41NTQxTDE0LjQxNiAyMC4yMzg5TDE1LjI3NCAxOS43MjUyQzE0LjQxNiAyMC4yMzg5IDE0LjQxNTggMjAuMjM4NSAxNC40MTU1IDIwLjIzOEwxNC40MTQ4IDIwLjIzNjlMMTQuNDEzMyAyMC4yMzQzTDE0LjQwOTEgMjAuMjI3MkwxNC4zOTY1IDIwLjIwNTdDMTQuMzg2NCAyMC4xODgxIDE0LjM3MjcgMjAuMTY0MSAxNC4zNTYgMjAuMTMzOUMxNC4zMjI1IDIwLjA3MzUgMTQuMjc2NyAxOS45ODgzIDE0LjIyMjEgMTkuODgwNEMxNC4xMTMgMTkuNjY0NyAxMy45NjgxIDE5LjM1NjkgMTMuODE2NCAxOC45NzM0QzEzLjUxNDIgMTguMjA5NyAxMy4xNzc4IDE3LjEyODQgMTMuMDUxNSAxNS44Njc2QzEyLjc5OTkgMTMuMzU0MiAxMy4zOTYzIDEwLjE1OTkgMTYuNjEzOSA3LjQ1MDQ3Wk0xNS4xMDE5IDE2LjE0MDRDMTUuMDc4IDE1Ljk4NjYgMTUuMDU3NyAxNS44MjkxIDE1LjA0MTYgMTUuNjY4NEMxNC44NDA4IDEzLjY2MjUgMTUuMjg4MyAxMS4xMjQzIDE4LjAwOTYgOC44OTA5OUMxOC4yNjM3IDguNzE3NjQgMTguMzc0MSA4LjQ3OTQyIDE4LjQwMDIgOC40MjMxOEMxOC40MDEgOC40MjE0OSAxOC40MDE3IDguNDE5OTcgMTguNDAyMyA4LjQxODYyQzE4LjQ2MTcgOC4yOTEzNiAxOC40OTgzIDguMTYxNjUgMTguNTIwNSA4LjA3NjQ0QzE4LjU1MTMgNy45NTgxNyAxOC41ODQ5IDcuNzk4NzUgMTguNjE2NSA3LjY0OTE1QzE4LjYyOTQgNy41ODc2MyAxOC42NDIxIDcuNTI3NzYgMTguNjU0IDcuNDczMUMxOC43NDkzIDcuMDM3MDYgMTguODc0NSA2LjU2MTQ4IDE5LjA5NjkgNi4xMzczMkMxOS4zMTMzIDUuNzI0NjQgMTkuNjAwMyA1LjQwMTI0IDIwLjAwOTIgNS4yMDg3NEMyMC40MTkzIDUuMDE1NjUgMjEuMDc0MiA0Ljg5Njg5IDIyLjEzMjYgNS4xMjMzMkMyMi41ODggNS4yMjA3NSAyMy4xMTA0IDUuMzA1NDMgMjMuNjc3OSA1LjM5NzRDMjUuMTUyOSA1LjYzNjQ4IDI2LjkzMTYgNS45MjQ3NiAyOC42MjQ4IDYuNjE0MDhDMzAuODczMiA3LjUyOTM1IDMyLjYzNTEgOS4wMzYxMiAzMi44MzYxIDExLjg4MTJDMzMuMDUxOSAxNC45MzQyIDMzLjA0MDMgMTYuMzU5MiAzMi44ODQ3IDE3LjI0OTRDMzIuODUzOSAxNy4xMzYgMzIuODIzMSAxNy4wMjEyIDMyLjc5MjMgMTYuOTA1NkMzMi41ODczIDE2LjEzNTkgMzIuMzg5NCAxNS4zNDk2IDMyLjI0MjUgMTQuNzU0NEMzMi4xNjkyIDE0LjQ1NzIgMzIuMTA4NyAxNC4yMDgzIDMyLjA2NjYgMTQuMDMzOUwzMi4wMTggMTMuODMxNkwzMi4wMDEzIDEzLjc2MTlMMzEuMDI4MSAxMy45OTE5TDMyLjAwMTEgMTMuNzYwOUwzMS43ODY0IDEyLjg1NjVMMzAuODcyNSAxMy4wMDQxQzMwLjg3MjYgMTMuMDA0MSAzMC44NzMyIDEzLjAwNCAzMC44NzI1IDEzLjAwNDFDMzAuODcyIDEzLjAwNDEgMzAuODcwMyAxMy4wMDQ0IDMwLjg2OTIgMTMuMDA0NUwzMC44NDE2IDEzLjAwODNDMzAuODEzOSAxMy4wMTE5IDMwLjc2OCAxMy4wMTc0IDMwLjcwNDggMTMuMDIzNUMzMC41Nzg0IDEzLjAzNTcgMzAuMzgzIDEzLjA1MDIgMzAuMTI2NCAxMy4wNTY0QzI5LjYxMyAxMy4wNjg5IDI4Ljg1NjEgMTMuMDQ4IDI3LjkxNjkgMTIuOTA5MkMyNi4wNDE1IDEyLjYzMiAyMy40MzMxIDExLjg4NCAyMC41NzYxIDkuOTgxM0wyMC4zNTA3IDkuODMxMTlMMjAuMDgwNCA5LjgxNTMyQzE4Ljc1NTIgOS43Mzc1MyAxNy43NzczIDEwLjYzNjMgMTcuMTI1MSAxMS41NDM1QzE2LjQ0ODIgMTIuNDg1MSAxNS45MTY2IDEzLjcwOTkgMTUuNTEwNSAxNC44Njg2QzE1LjM2MDEgMTUuMjk3NyAxNS4yMjM5IDE1LjcyNjUgMTUuMTAxOSAxNi4xNDA0Wk0zMy41NTU0IDE5LjQwNzJDMzMuNTY5NiAxOS40MzU1IDMzLjU2OTkgMTkuNDMwNSAzMy41NTQ5IDE5LjQwNjFDMzMuNTU1MSAxOS40MDY1IDMzLjU1NTMgMTkuNDA2OSAzMy41NTU0IDE5LjQwNzJaIiBmaWxsPSIjMzMzMzMzIi8+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMTguMTI1NCAyOC42MjgyQzE3Ljg5NzEgMjguMTYwNCAxNy4zODE0IDI3LjkwNzYgMTYuODc4NiAyOC4wMzEyQzExLjQ3NDUgMjkuMzU5MiA2IDMyLjA2NzEgNiAzNi4xNDA3VjQxVjQzSDhINDBINDJWNDFWMzYuMTQwN0M0MiAzMi4wNjcxIDM2LjUyNTUgMjkuMzU5MiAzMS4xMjE0IDI4LjAzMTJDMzAuNjE4NiAyNy45MDc2IDMwLjEwMjkgMjguMTYwNCAyOS44NzQ2IDI4LjYyODJMMjUuODEwNSAyOC42MjgyQzI0LjkyMTggMjguNjI4NCAyNC40NjkzIDI4LjYyODQgMjQuMDI0OCAyOC42Mjg0QzIzLjU2MzcgMjguNjI4MyAyMy4xMTEyIDI4LjYyODMgMjIuMTg5MyAyOC42Mjg1TDE4LjEyNTQgMjguNjI4MlpNMjUuODEwOSAzMC42MjgyQzI1LjgxMDcgMzAuNjI4MiAyNS44MTA2IDMwLjYyODIgMjUuODEwNSAzMC42MjgyQzI0LjkxNjIgMzAuNjI4NCAyNC40NjYgMzAuNjI4NCAyNC4wMjQgMzAuNjI4NEMyMy41NjU4IDMwLjYyODMgMjMuMTE2MiAzMC42MjgzIDIyLjE4OTggMzAuNjI4NUwyMi4xODkyIDMwLjYyODVMMTguMTI1MiAzMC42MjgyTDE2Ljg3NTggMzAuNjI4MUwxNi42NDU2IDMwLjE1NjRDMTQuMzIzMyAzMC43ODI5IDEyLjEzMjggMzEuNjU1IDEwLjUxNjIgMzIuNzI0NEM4LjY5MjYyIDMzLjkzMDcgOCAzNS4wOTk1IDggMzYuMTQwN1Y0MUg0MFYzNi4xNDA3QzQwIDM1LjA5OTUgMzkuMzA3NCAzMy45MzA3IDM3LjQ4MzggMzIuNzI0NEMzNS44NjcyIDMxLjY1NSAzMy42NzY3IDMwLjc4MjkgMzEuMzU0NCAzMC4xNTY0TDMxLjEyNDIgMzAuNjI4MkwyOS44NzQ2IDMwLjYyODJMMjUuODEwOSAzMC42MjgyWiIgZmlsbD0iIzMzMzMzMyIvPgo8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTE2IDM1LjkwMzhDMTYuNTM4NCAzNS45MDM4IDE3IDM1LjQ2MDEgMTcgMzQuODgxNkMxNyAzNC4zMDMxIDE2LjUzODQgMzMuODU5NCAxNiAzMy44NTk0QzE1LjQ2MTYgMzMuODU5NCAxNSAzNC4zMDMxIDE1IDM0Ljg4MTZDMTUgMzUuNDYwMSAxNS40NjE2IDM1LjkwMzggMTYgMzUuOTAzOFpNMTYgMzcuOTAzOEMxNy42NTY5IDM3LjkwMzggMTkgMzYuNTUwNyAxOSAzNC44ODE2QzE5IDMzLjIxMjUgMTcuNjU2OSAzMS44NTk0IDE2IDMxLjg1OTRDMTQuMzQzMSAzMS44NTk0IDEzIDMzLjIxMjUgMTMgMzQuODgxNkMxMyAzNi41NTA3IDE0LjM0MzEgMzcuOTAzOCAxNiAzNy45MDM4WiIgZmlsbD0iIzMzMzMzMyIvPgo8cGF0aCBkPSJNMTUuNjM1NCAyOS42MTE3QzE1LjQxNzggMzAuMzQ2MSAxNS40MzkxIDMxLjI1IDE1Ljg5MDEgMzIuMzYwNkwxNC4wMzcxIDMzLjExMzFDMTMuNTkzNSAzMi4wMjA4IDEzLjQyOTMgMzAuOTc2MyAxMy41MjkzIDI5Ljk5OTlDMTMuNTYyNyAyOS42NzMyIDEzLjYyNTggMjkuMzU0MSAxMy43MTc4IDI5LjA0MzVMMTUuNjM1NCAyOS42MTE3WiIgZmlsbD0iIzMzMzMzMyIvPgo8cGF0aCBkPSJNMzIuNTM0OCAzMi40OTZMMzQuNDc2IDMyLjk3NzdDMzQuNzI2NiAzMS45Njc5IDM0Ljc3ODkgMzEuMDE4OSAzNC42NSAzMC4xMzk1TDMyLjQxMTQgMjkuNDc4NEMzMi43NDMgMzAuMjg0IDMyLjgzNzkgMzEuMjc0NyAzMi41MzQ4IDMyLjQ5NloiIGZpbGw9IiMzMzMzMzMiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0zMS40MjY4IDMyLjIyNUMzMS42MDUzIDMyLjA3OTUgMzEuODI4NSAzMiAzMi4wNTg4IDMySDM0Ljk0MTJDMzUuMTcxNSAzMiAzNS4zOTQ3IDMyLjA3OTUgMzUuNTczMiAzMi4yMjVMMzcuNjMyIDMzLjkwNEMzNy44NjQ5IDM0LjA5NCAzOCAzNC4zNzg1IDM4IDM0LjY3OVYzOS4wNDQ0QzM4IDM5LjU5NjcgMzcuNTUyMyA0MC4wNDQ0IDM3IDQwLjA0NDRIMzQuOTQxMlYzOC4wNDQ0SDM2VjM1LjE1MzlMMzQuNTg1MSAzNEgzMi40MTQ5TDMxIDM1LjE1MzlWMzguMDQ0NEgzMi4wNTg4VjQwLjA0NDRIMzBDMjkuNDQ3NyA0MC4wNDQ0IDI5IDM5LjU5NjcgMjkgMzkuMDQ0NFYzNC42NzlDMjkgMzQuMzc4NSAyOS4xMzUxIDM0LjA5NCAyOS4zNjggMzMuOTA0TDMxLjQyNjggMzIuMjI1WiIgZmlsbD0iIzMzMzMzMyIvPgo8L3N2Zz4=",
+        doctorFemale: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz48IS0tIFVwbG9hZGVkIHRvOiBTVkcgUmVwbywgd3d3LnN2Z3JlcG8uY29tLCBHZW5lcmF0b3I6IFNWRyBSZXBvIE1peGVyIFRvb2xzIC0tPgo8c3ZnIHdpZHRoPSI4MDBweCIgaGVpZ2h0PSI4MDBweCIgdmlld0JveD0iMCAwIDQ4IDQ4IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGNsaXAtcnVsZT0iZXZlbm9kZCIgZD0iTTE4LjEyNTQgMjguNjI4MkMxNy44OTcxIDI4LjE2MDQgMTcuMzgxNCAyNy45MDc2IDE2Ljg3ODYgMjguMDMxMkMxMS40NzQ1IDI5LjM1OTIgNiAzMi4wNjcxIDYgMzYuMTQwN1Y0MVY0M0g4SDQwSDQyVjQxVjM2LjE0MDdDNDIgMzIuMDY3MSAzNi41MjU1IDI5LjM1OTIgMzEuMTIxNCAyOC4wMzEyQzMwLjYxODYgMjcuOTA3NiAzMC4xMDI5IDI4LjE2MDQgMjkuODc0NiAyOC42MjgyTDI1LjgxMDUgMjguNjI4MkMyNC45MjE4IDI4LjYyODQgMjQuNDY5MyAyOC42Mjg0IDI0LjAyNDggMjguNjI4NEMyMy41NjM3IDI4LjYyODMgMjMuMTExMiAyOC42MjgzIDIyLjE4OTMgMjguNjI4NUwxOC4xMjU0IDI4LjYyODJaTTI1LjgxMDkgMzAuNjI4MkMyNS44MTA3IDMwLjYyODIgMjUuODEwNiAzMC42MjgyIDI1LjgxMDUgMzAuNjI4MkMyNC45MTYyIDMwLjYyODQgMjQuNDY2IDMwLjYyODQgMjQuMDI0IDMwLjYyODRDMjMuNTY1OCAzMC42MjgzIDIzLjExNjIgMzAuNjI4MyAyMi4xODk4IDMwLjYyODVMMjIuMTg5MiAzMC42Mjg1TDE4LjEyNTIgMzAuNjI4MkwxNi44NzU4IDMwLjYyODFMMTYuNjQ1NiAzMC4xNTY0QzE0LjMyMzMgMzAuNzgyOSAxMi4xMzI4IDMxLjY1NSAxMC41MTYyIDMyLjcyNDRDOC42OTI2MiAzMy45MzA3IDggMzUuMDk5NSA4IDM2LjE0MDdWNDFINDBWMzYuMTQwN0M0MCAzNS4wOTk1IDM5LjMwNzQgMzMuOTMwNyAzNy40ODM4IDMyLjcyNDRDMzUuODY3MiAzMS42NTUgMzMuNjc2NyAzMC43ODI5IDMxLjM1NDQgMzAuMTU2NEwzMS4xMjQyIDMwLjYyODJMMjkuODc0NiAzMC42MjgyTDI1LjgxMDkgMzAuNjI4MloiIGZpbGw9IiMzMzMzMzMiLz4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0xNiAzNS45MDM4QzE2LjUzODQgMzUuOTAzOCAxNyAzNS40NjAxIDE3IDM0Ljg4MTZDMTcgMzQuMzAzMSAxNi41Mzg0IDMzLjg1OTQgMTYgMzMuODU5NEMxNS40NjE2IDMzLjg1OTQgMTUgMzQuMzAzMSAxNSAzNC44ODE2QzE1IDM1LjQ2MDEgMTUuNDYxNiAzNS45MDM4IDE2IDM1LjkwMzhaTTE2IDM3LjkwMzhDMTcuNjU2OSAzNy45MDM4IDE5IDM2LjU1MDcgMTkgMzQuODgxNkMxOSAzMy4yMTI1IDE3LjY1NjkgMzEuODU5NCAxNiAzMS44NTk0QzE0LjM0MzEgMzEuODU5NCAxMyAzMy4yMTI1IDEzIDM0Ljg4MTZDMTMgMzYuNTUwNyAxNC4zNDMxIDM3LjkwMzggMTYgMzcuOTAzOFoiIGZpbGw9IiMzMzMzMzMiLz4KPHBhdGggZD0iTTE1LjYzNTQgMjkuNjExN0MxNS40MTc4IDMwLjM0NjEgMTUuNDM5MSAzMS4yNSAxNS44OTAxIDMyLjM2MDZMMTQuMDM3MSAzMy4xMTMxQzEzLjU5MzUgMzIuMDIwOCAxMy40MjkzIDMwLjk3NjMgMTMuNTI5MyAyOS45OTk5QzEzLjU2MjcgMjkuNjczMiAxMy42MjU4IDI5LjM1NDEgMTMuNzE3OCAyOS4wNDM1TDE1LjYzNTQgMjkuNjExN1oiIGZpbGw9IiMzMzMzMzMiLz4KPHBhdGggZD0iTTMyLjUzNDggMzIuNDk2TDM0LjQ3NiAzMi45Nzc3QzM0LjcyNjYgMzEuOTY3OSAzNC43Nzg5IDMxLjAxODkgMzQuNjUgMzAuMTM5NUwzMi40MTE0IDI5LjQ3ODRDMzIuNzQzIDMwLjI4NCAzMi44Mzc5IDMxLjI3NDcgMzIuNTM0OCAzMi40OTZaIiBmaWxsPSIjMzMzMzMzIi8+CjxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgY2xpcC1ydWxlPSJldmVub2RkIiBkPSJNMzEuNDI2OCAzMi4yMjVDMzEuNjA1MyAzMi4wNzk1IDMxLjgyODUgMzIgMzIuMDU4OCAzMkgzNC45NDEyQzM1LjE3MTUgMzIgMzUuMzk0NyAzMi4wNzk1IDM1LjU3MzIgMzIuMjI1TDM3LjYzMiAzMy45MDRDMzcuODY0OSAzNC4wOTQgMzggMzQuMzc4NSAzOCAzNC42NzlWMzkuMDQ0NEMzOCAzOS41OTY3IDM3LjU1MjMgNDAuMDQ0NCAzNyA0MC4wNDQ0SDM0Ljk0MTJWMzguMDQ0NEgzNlYzNS4xNTM5TDM0LjU4NTEgMzRIMzIuNDE0OUwzMSAzNS4xNTM5VjM4LjA0NDRIMzIuMDU4OFY0MC4wNDQ0SDMwQzI5LjQ0NzcgNDAuMDQ0NCAyOSAzOS41OTY3IDI5IDM5LjA0NDRWMzQuNjc5QzI5IDM0LjM3ODUgMjkuMTM1MSAzNC4wOTQgMjkuMzY4IDMzLjkwNEwzMS40MjY4IDMyLjIyNVoiIGZpbGw9IiMzMzMzMzMiLz4KPHBhdGggZD0iTTEyIDIwLjE4NjRDMTIgMjQuODEzNiAyMC4zNTMyIDI2IDIwLjM1MzIgMjZDMjAuMzUzMiAyNiAxNC42MzE4IDE3LjEwMTcgMTcuNDkyNSAxNS41NTkzQzIwLjM1MzIgMTQuMDE2OSAyOC4xMzQzIDExLjA1MDggMjguNzA2NSAxMi4xMTg2QzMzLjk3MDEgMTkuNzExOSAyNy4yMTg5IDI2IDI3LjIxODkgMjZDMjcuMjE4OSAyNiAzNSAyNS4yODgxIDM1IDIwLjE4NjRDMzUgMTUuMDg0NyAzMS4zMzgzIDguOTE1MjUgMzEuMzM4MyA4LjkxNTI1QzMxLjMzODMgOC45MTUyNSAyOC43MDY1IDUgMjMuNTU3MiA1QzE4LjQwOCA1IDE2LjU3NzEgOC45MTUyNSAxNi41NzcxIDguOTE1MjVDMTYuNTc3MSA4LjkxNTI1IDEyIDE1LjU1OTMgMTIgMjAuMTg2NFoiIHN0cm9rZT0iIzMzMzMzMyIgc3Ryb2tlLXdpZHRoPSIyIi8+Cjwvc3ZnPg==",
+      };
+      const src = icons[type];
+      if (!src) return "";
+      return `<img class="preview-icon" src="${src}" alt="" aria-hidden="true" loading="lazy" />`;
+    }
+
+    function renderSection(section) {
+      if (!section) return "";
+      const title = `<h3 class="preview-section-title">${escapeHtml(section.title)}</h3>`;
+      if (section.items) {
+        return `
+          <section class="preview-section-card">
+            ${title}
+            <div class="section-content">
+              ${section.items.map(renderContactItem).join("")}
+              ${renderMessages(section.messages)}
+            </div>
+          </section>
+        `;
+      }
+      if (section.groups) {
+        return `
+          <section class="preview-section-card">
+            ${title}
+            <div class="section-content">
+              ${section.groups.map((group) => `
+                <details ${group.type === "reception" ? "open" : ""} onclick="event.stopPropagation()">
+                  <summary onclick="event.stopPropagation()">${escapeHtml(group.title || "")}</summary>
+                  ${asArray(group.rows || group.items).map((row) => `<div>${escapeHtml(row.dayText || row.text || "")} ${escapeHtml(row.hoursText || "")} ${escapeHtml(row.notes || row.coverageText || "")}</div>`).join("")}
+                </details>
+              `).join("")}
+            </div>
+          </section>
+        `;
+      }
+      if (section.messages || section.city) {
+        return `
+          <section class="preview-section-card">
+            ${title}
+            <div class="section-content">
+              ${section.city ? `<div>${escapeHtml(section.city)}</div>` : ""}
+              ${renderMessages(section.messages)}
+            </div>
+          </section>
+        `;
+      }
+      return "";
+    }
+
+    function renderResult(result) {
+      const open = state.openCards.has(result.resultId);
+      const card = result.collapsedCard;
+      const header = result.expandedCard.header || card;
+      const sections = result.expandedCard.sections || {};
+      if (open) {
+        return `
+          <article class="search-result-card open" role="button" tabindex="0" onclick="toggleCard('${escapeJs(result.resultId)}')" onkeydown="handleCardKey(event, '${escapeJs(result.resultId)}')">
+            <div class="expanded">
+              <div class="provider-screen">
+                <div class="expanded-hero">
+                  <div class="doctor-avatar">${icon(header.avatarType) || escapeHtml(avatarLetter(header.avatarType))}</div>
+                  <div>
+                    <div class="search-result-name">${escapeHtml(header.title)}</div>
+                    <div class="search-result-meta">${renderTextLines(header.subtitleLines)}</div>
+                    ${header.chips ? `<div class="search-result-footer">${renderChips(header.chips)}</div>` : ""}
+                  </div>
+                </div>
+                ${card.locationText ? `<div class="expanded-location-row">${icon("locationPin")}${escapeHtml(card.locationText)}</div>` : ""}
+                <div class="service-layout">
+                  <div class="service-main-column">
+                    ${renderSection(sections.address)}
+                    ${renderSection(sections.schedule)}
+                    ${renderSection(sections.services)}
+                    ${renderSection(sections.absences)}
+                  </div>
+                  <div class="service-side-column">
+                    ${renderSection(sections.appointments)}
+                    ${renderSection(sections.contacts)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        `;
+      }
+      return `
+        <article class="search-result-card" role="button" tabindex="0" onclick="toggleCard('${escapeJs(result.resultId)}')" onkeydown="handleCardKey(event, '${escapeJs(result.resultId)}')">
+          <div class="search-result-hero">
+            <div class="search-result-avatar">${icon(card.avatarType) || escapeHtml(avatarLetter(card.avatarType))}</div>
+            <div>
+              <div class="search-result-name">${escapeHtml(card.title)}</div>
+              <div class="search-result-meta">${renderTextLines(card.subtitleLines)}</div>
+            </div>
+          </div>
+          ${card.locationText ? `<div class="search-result-location-row"><span class="search-result-location">${icon("locationPin")}${escapeHtml(card.locationText)}</span></div>` : ""}
+          ${renderMessages(card.messages)}
+          <div class="search-result-footer">
+            ${renderChips(card.chips)}
+          </div>
+        </article>
+      `;
+    }
+
+    function renderPreview() {
+      const response = state.flow.displayResponse;
+      if (!response) {
+        els.previewBody.innerHTML = `<div class="empty">יש להפעיל את הסימולטור כדי להציג תוצאות</div>`;
+        return;
+      }
+      if (!response.results.length) {
+        els.previewBody.innerHTML = `<div class="preview-shell"><div class="empty">לא נמצאו תוצאות לחיפוש.</div></div>`;
+        return;
+      }
+      const visible = response.results.slice(0, state.visibleCount);
+      els.previewBody.innerHTML = `
+        <div class="preview-shell">
+          <div class="preview-head">
+            <strong>תוצאות חיפוש</strong>
+            <span>מוצגות ${visible.length} מתוך ${response.results.length}</span>
+          </div>
+          <div class="results-list">
+            ${visible.map(renderResult).join("")}
+            ${state.visibleCount < response.results.length ? `<button class="button primary" type="button" onclick="loadMoreResults()">טעינת תוצאות נוספות</button>` : ""}
+          </div>
+        </div>
+      `;
+    }
+
+    function render() {
+      renderRunStatus();
+      renderHeaderErrors();
+      renderStepper();
+      renderWorkspace();
+      renderPreview();
+    }
+
+    window.setStep = function(id) {
+      state.selectedStep = id;
+      state.previewPanelOpen = false;
+      state.explanationOpen = false;
+      render();
+    };
+
+    window.updateSearchJsonText = function(value) {
+      state.searchJsonText = value;
+      state.fileName = "";
+      try { state.searchJson = value.trim() ? JSON.parse(value) : null; } catch (error) { state.searchJson = null; }
+      render();
+    };
+
+    window.togglePreviewPanel = function() {
+      state.previewPanelOpen = !state.previewPanelOpen;
+      render();
+    };
+
+    window.toggleExplanationPanel = function() {
+      state.explanationOpen = !state.explanationOpen;
+      render();
+    };
+
+    window.toggleCard = function(resultId) {
+      if (state.openCards.has(resultId)) state.openCards.delete(resultId);
+      else state.openCards.add(resultId);
+      render();
+    };
+
+    window.handleCardKey = function(event, resultId) {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      event.stopPropagation();
+      window.toggleCard(resultId);
+    };
+
+    window.loadMoreResults = function() {
+      state.visibleCount += 10;
+      render();
+    };
+
+    window.toggleJson = function(target) {
+      state.jsonVisible[target] = !state.jsonVisible[target];
+      render();
+    };
+
+    window.copyJson = async function(target) {
+      const data = dataForTarget(target);
+      if (data === undefined || data === null) return;
+      await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    };
+
+    window.copyContactValue = async function(event, value) {
+      event.preventDefault();
+      event.stopPropagation();
+      await navigator.clipboard.writeText(value);
+    };
+
+    window.downloadSimulation = function() {
+      const payload = {
+        generatedAt: new Date().toISOString(),
+        flow: state.flow,
+        orchestratorSummary: state.orchestratorSummary,
+        displaySummary: state.displaySummary,
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "service-guide-slim-simulation.json";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    els.uploadButton.addEventListener("click", () => els.jsonFile.click());
+    els.jsonFile.addEventListener("change", async () => {
+      const file = els.jsonFile.files && els.jsonFile.files[0];
+      if (!file) return;
+      if (file.size > MAX_UPLOAD_BYTES) {
+        state.errors = ["ניתן להעלות קובץ עד 1MB"];
+        render();
+        return;
+      }
+      state.searchJsonText = await file.text();
+      state.fileName = file.name;
+      try { state.searchJson = JSON.parse(state.searchJsonText); } catch (error) { state.searchJson = null; }
+      state.selectedStep = "searchResponse";
+      render();
+    });
+    els.runButton.addEventListener("click", runFlow);
+    els.resetButton.addEventListener("click", resetFlow);
+    els.searchText.addEventListener("input", () => {});
+    els.environment.addEventListener("change", renderRunStatus);
+
+    render();
+  </script>
+</body>
+</html>
+
