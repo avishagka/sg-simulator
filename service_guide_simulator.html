@@ -1923,13 +1923,11 @@
       const sourceDays = sourceRows
         .map((row) => Number(row.availabilityWeekDay))
         .filter((day) => Number.isInteger(day) && day >= 1 && day <= 6);
-      if (!sourceDays.length) return displayRows;
+      if (!sourceDays.length && !displayRows.length) return displayRows;
       const coveredDays = new Set(displayRows.map((row) => Number(row.availabilityWeekDay)));
-      const minDay = Math.min(...sourceDays);
-      const maxDay = Math.max(...sourceDays);
       const scheduleType = Number(sourceRows[0].scheduleType);
-      for (let day = minDay; day <= maxDay; day += 1) {
-        if (day !== 7 && !coveredDays.has(day)) {
+      for (let day = 1; day <= 6; day += 1) {
+        if (!coveredDays.has(day)) {
           displayRows.push(closedScheduleRow(scheduleType, day));
         }
       }
@@ -2126,7 +2124,7 @@
       const validRows = groupedRows.flatMap(scheduleRowsForGroup);
       const groups = asArray(result.expandedCard.sections?.schedule?.groups);
       const groupText = groups.map((group) => `${group.type}:${asArray(group.rows).map((row) => `${row.dayText} ${row.hoursText}${row.notes ? ` (${row.notes})` : ""}`).join("; ")}`).join(" | ") || "לא נמצאו נתונים";
-      return `סינון BFF: רק scheduleType ממופה ויום 1-7; שעות תקינות מוצגות כ-HH:mm עד HH:mm; יום ללא שעות או יום חסר בתוך טווח הימים של אותה קבוצת שעות מוחזר כסגור, למעט שבת ללא שעות שמושמטת; frequencyDesc=שבועית אינו מוחזר ב-notes; ימים רצופים מתאחדים רק אם שעות/סגור והערה זהים. מקור=${rows.length}, תקינים=${validRows.length}, קבוצות לתצוגה=${groups.length}; פירוט קבוצות=${groupText}`;
+      return `סינון BFF: רק scheduleType ממופה ויום 1-7; שעות תקינות מוצגות כ-HH:mm עד HH:mm; יום ללא שעות או כל יום חסר בימים א׳-ו׳ של אותה קבוצת שעות מוחזר כסגור, למעט שבת ללא שעות שמושמטת; frequencyDesc=שבועית אינו מוחזר ב-notes; ימים רצופים מתאחדים רק אם שעות/סגור והערה זהים. מקור=${rows.length}, תקינים=${validRows.length}, קבוצות לתצוגה=${groups.length}; פירוט קבוצות=${groupText}`;
     }
 
     function serviceDecision(hit, result) {
