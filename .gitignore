@@ -1,4 +1,5 @@
-/*
-!/.gitignore
-!/simulator html/
-!/simulator html/**
+.~lock.*
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
