@@ -76,6 +76,7 @@
       font-size: 14px;
       font-weight: 400;
       line-height: 1.6;
+      overflow: hidden;
     }
 
     h1, h2, h3, p {
@@ -104,9 +105,12 @@
 
     .app {
       width: min(1440px, calc(100vw - 32px));
+      height: calc(100vh - 32px);
       margin: 16px auto;
       display: grid;
+      grid-template-rows: auto auto minmax(0, 1fr);
       gap: 12px;
+      min-height: 0;
     }
 
     .panel {
@@ -131,6 +135,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
+      flex: none;
     }
 
     .panel-title {
@@ -148,6 +153,7 @@
 
     .panel-body {
       padding: 16px;
+      min-height: 0;
     }
 
     .header {
@@ -371,13 +377,18 @@
     .workspace {
       display: grid;
       grid-template-columns: minmax(520px, 1fr) minmax(520px, .95fr);
+      grid-template-rows: minmax(0, 1fr);
       gap: 16px;
-      align-items: start;
+      align-items: stretch;
+      min-height: 0;
+      height: 100%;
     }
 
     .workbench, .preview-panel {
-      position: sticky;
-      top: 10px;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      height: 100%;
     }
 
     .workbench {
@@ -388,9 +399,17 @@
       background: #fff;
     }
 
+    .workbench .panel-body,
+    .preview-panel .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
     .main-grid {
       display: grid;
       gap: 12px;
+      min-height: 0;
     }
 
     .json-box {
@@ -577,7 +596,7 @@
 
     .workspace.explanation-visible .workbench,
     .workspace.explanation-visible .preview-panel {
-      display: block;
+      display: flex;
     }
 
     .item-title {
@@ -929,15 +948,12 @@
 
       .workspace {
         grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, 1fr);
       }
 
       .workspace.explanation-visible {
         grid-template-columns: 1fr;
-      }
-
-      .workbench,
-      .preview-panel {
-        position: static;
+        grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
       }
     }
 
@@ -1037,7 +1053,7 @@
   <script>
     const INITIATOR_CODE = "001";
     const MAX_UPLOAD_BYTES = 1000 * 1024;
-    const BFF_RULESET_VERSION = "v4-slim";
+    const BFF_RULESET_VERSION = "v1";
 
     const steps = [
       { id: "ui", name: "בקשת חיפוש UI", sub: "ServiceGuideSearchRequest" },
@@ -1057,7 +1073,7 @@
       flow: {},
       orchestratorSummary: null,
       displaySummary: null,
-      openCards: new Set(),
+      selectedProviderId: null,
       visibleCount: 10,
       errors: [],
       jsonVisible: {},
@@ -1433,7 +1449,7 @@
         hebrewServiceName: item.hebrew_service_name ?? null,
         cptPubtName: item.cpt_pubt_name ?? null,
         cptPubt: item.cpt_pubt ?? null,
-        coverageCode: item.treat_is_personal === true ? "COMPLEMENTARY" : "BASKET",
+        coverageCode: item.coverage_code ?? item.coverageCode ?? null,
       }));
     }
 
@@ -1521,7 +1537,7 @@
         shabanType: source.shaban_type ?? null,
         shabanInd: source.shaban_ind ?? null,
         mlhInd: source.mlh_ind ?? null,
-        membershipStatusCode: source.limited_memb_icon === true ? "LIMITED" : null,
+        membershipStatusCode: source.membership_status_code ?? source.membershipStatusCode ?? null,
         homeClinicIcon: source.home_clinic_icon ?? null,
         sharedClinicIcon: source.shared_clinic_icon ?? null,
         absenceIcon: source.absence_icon ?? null,
@@ -1664,12 +1680,12 @@
         {
           title: "קביעת סטטוס קבלת חברים",
           value: formatCountMap(membershipCounts),
-          details: hits.map((hit) => `${hit.resultId}: limited_memb_icon → ${hit.membershipStatusCode || "null"}`),
+          details: hits.map((hit) => `${hit.resultId}: membershipStatusCode → ${hit.membershipStatusCode || "null"}`),
         },
         {
           title: "קביעת סוג כיסוי",
           value: formatCountMap(coverageCounts),
-          details: hits.flatMap((hit) => hit.servTreats.map((item, index) => `${hit.resultId} טיפול ${index + 1}: ${item.coverageCode}`)),
+          details: hits.flatMap((hit) => hit.servTreats.map((item, index) => `${hit.resultId} טיפול ${index + 1}: coverageCode → ${item.coverageCode || "null"}`)),
         },
         {
           title: "בחירת הערה להצגה",
@@ -1831,7 +1847,6 @@
         }
         if (meta.actionType === "mailto") {
           item.actionType = "mailto";
-          item.actionValue = text;
           item.actionUri = `mailto:${text}`;
         }
         item.order = meta.order;
@@ -1920,14 +1935,14 @@
 
     function scheduleRowsForGroup(sourceRows) {
       const displayRows = sourceRows.map(scheduleDisplayRow).filter(Boolean);
-      const sourceDays = sourceRows
-        .map((row) => Number(row.availabilityWeekDay))
-        .filter((day) => Number.isInteger(day) && day >= 1 && day <= 6);
-      if (!sourceDays.length && !displayRows.length) return displayRows;
+      if (!displayRows.length) return displayRows;
       const coveredDays = new Set(displayRows.map((row) => Number(row.availabilityWeekDay)));
+      const sourceDays = new Set(sourceRows
+        .map((row) => Number(row.availabilityWeekDay))
+        .filter((day) => Number.isInteger(day) && day >= 1 && day <= 6));
       const scheduleType = Number(sourceRows[0].scheduleType);
       for (let day = 1; day <= 6; day += 1) {
-        if (!coveredDays.has(day)) {
+        if (!coveredDays.has(day) && !sourceDays.has(day)) {
           displayRows.push(closedScheduleRow(scheduleType, day));
         }
       }
@@ -1995,9 +2010,11 @@
         const text = firstText(row.sgTreatName, row.cellTreatName, row.hebrewText, row.hebrewServiceName);
         const code = firstText(row.cptCode, extractServiceCode(text));
         if (!hasText(text)) return null;
+        const hasGroupTitle = hasText(row.cptPubtName);
         return {
           groupKey: hasText(row.cptPubt) ? row.cptPubt : "services",
-          groupTitle: hasText(row.cptPubt) ? (row.cptPubtName || "") : "",
+          groupTitle: hasGroupTitle ? row.cptPubtName : "טיפולים נוספים",
+          groupTitleMissing: !hasGroupTitle,
           text: hasText(text) ? cleanServiceText(text, code) : String(code || ""),
           coverageText: row.coverageCode === "COMPLEMENTARY" ? "משלים" : "בסל",
         };
@@ -2006,12 +2023,18 @@
       const groupsMap = {};
       items.forEach((item) => {
         const key = item.groupKey;
-        groupsMap[key] = groupsMap[key] || { items: [] };
-        if (hasText(item.groupTitle)) groupsMap[key].title = item.groupTitle;
-        const { groupKey, groupTitle, ...clean } = item;
+        groupsMap[key] = groupsMap[key] || { title: item.groupTitle, titleMissing: item.groupTitleMissing, items: [] };
+        if (hasText(item.groupTitle) && !item.groupTitleMissing) {
+          groupsMap[key].title = item.groupTitle;
+          groupsMap[key].titleMissing = false;
+        }
+        const { groupKey, groupTitle, groupTitleMissing, ...clean } = item;
         groupsMap[key].items.push(clean);
       });
-      return { title: "ניתוחים וטיפולים", groups: Object.values(groupsMap) };
+      const groups = Object.values(groupsMap)
+        .sort((a, b) => Number(a.titleMissing) - Number(b.titleMissing))
+        .map(({ titleMissing, ...group }) => group);
+      return { title: "ניתוחים וטיפולים", groups };
     }
 
     function buildAbsencesSection(hit) {
@@ -2058,12 +2081,22 @@
       if (subtitles.length) header.subtitleLines = subtitles;
       const headerChips = shabanChips(hit);
       if (headerChips.length) header.chips = headerChips;
-      const expandedCard = { header };
-      if (Object.keys(sections).length) expandedCard.sections = sections;
-      return {
+      const providerDetails = {
         resultId: hit.resultId,
-        collapsedCard: collapsed,
-        expandedCard,
+        header,
+      };
+      if (hasText(hit.cityName)) providerDetails.locationText = hit.cityName;
+      if (Object.keys(sections).length) providerDetails.sections = sections;
+      return {
+        result: {
+          resultId: hit.resultId,
+          collapsedCard: collapsed,
+          navigation: {
+            type: "providerDetails",
+            targetId: hit.resultId,
+          },
+        },
+        providerDetails,
       };
     }
 
@@ -2106,10 +2139,11 @@
     }
 
     function contactDecision(hit, result) {
-      const items = asArray(result.expandedCard.sections?.contacts?.items);
+      const details = result.providerDetails;
+      const items = asArray(details.sections?.contacts?.items);
       const displayTexts = items.map((item) => `${item.type}:${item.text}`).join(", ") || "לא נמצאו נתונים";
       const rejected = asArray(hit.contacts).length - items.length;
-      const disclaimer = asArray(result.expandedCard.sections?.contacts?.messages).some((message) => message.type === "emailDisclaimer");
+      const disclaimer = asArray(details.sections?.contacts?.messages).some((message) => message.type === "emailDisclaimer");
       return `נלקח רק contactDetail לאחר trim; dedup לפי type+text; מיון לפי phone, appointments, fax, mobile, email, other. display=${displayTexts}; rejectedOrDedup=${Math.max(0, rejected)}; emailDisclaimer=${disclaimer ? "כן" : "לא"}`;
     }
 
@@ -2122,30 +2156,32 @@
         return acc;
       }, {}));
       const validRows = groupedRows.flatMap(scheduleRowsForGroup);
-      const groups = asArray(result.expandedCard.sections?.schedule?.groups);
+      const details = result.providerDetails;
+      const groups = asArray(details.sections?.schedule?.groups);
       const groupText = groups.map((group) => `${group.type}:${asArray(group.rows).map((row) => `${row.dayText} ${row.hoursText}${row.notes ? ` (${row.notes})` : ""}`).join("; ")}`).join(" | ") || "לא נמצאו נתונים";
-      return `סינון BFF: רק scheduleType ממופה ויום 1-7; שעות תקינות מוצגות כ-HH:mm עד HH:mm; יום ללא שעות או כל יום חסר בימים א׳-ו׳ של אותה קבוצת שעות מוחזר כסגור, למעט שבת ללא שעות שמושמטת; frequencyDesc=שבועית אינו מוחזר ב-notes; ימים רצופים מתאחדים רק אם שעות/סגור והערה זהים. מקור=${rows.length}, תקינים=${validRows.length}, קבוצות לתצוגה=${groups.length}; פירוט קבוצות=${groupText}`;
+      return `שעות פעילות נבנות רק מרשומות עם scheduleType ממופה ויום בטווח 1-7. שעות תקינות מוצגות בפורמט HH:mm עד HH:mm. אם שעת התחלה או שעת סיום חסרה או לא ניתנת לפענוח, הרשומה מושמטת ולא מוצגת כ"סגור". ימים א׳-ו׳ שלא הופיעו כלל בקבוצת השעות מושלמים כ"סגור"; שבת ללא שעות אינה מוחזרת. ימים רצופים מתאחדים לטווח רק כאשר הטקסט, הסטטוס וההערה זהים. מקור=${rows.length}, תקינים=${validRows.length}, קבוצות לתצוגה=${groups.length}; פירוט קבוצות=${groupText}`;
     }
 
     function serviceDecision(hit, result) {
-      const section = result.expandedCard.sections?.services;
+      const section = result.providerDetails.sections?.services;
       const items = asArray(section?.groups).flatMap((group) => asArray(group.items).map((item) => item.text));
-      return `טקסט טיפול נבחר לפי fallback sgTreatName -> cellTreatName -> hebrewText -> hebrewServiceName; אם קוד טיפול הופיע בתוך הטקסט הוא נוקה מהטקסט לתצוגה, אך אינו מוחזר ל־UI; קיבוץ לפי cptPubt. מקור=${asArray(hit.servTreats).length}, פריטים לתצוגה=${items.length}; פירוט פריטים=${items.join(", ") || "לא נמצאו נתונים"}`;
+      return `טיפול מוצג רק אם נמצא שם טיפול לתצוגה לפי סדר fallback: sgTreatName, cellTreatName, hebrewText, hebrewServiceName. אם אין שם טיפול לתצוגה, הפריט מושמט גם אם קיים cptCode. קוד טיפול שמופיע בתוך הטקסט מנוקה מהתצוגה ואינו מוחזר ל־UI. הפריטים מקובצים לפי cptPubt; אם אין שם קבוצה, הקבוצה תוצג כ"טיפולים נוספים" ותמויין לאחר הקבוצות בעלות שם. מקור=${asArray(hit.servTreats).length}, פריטים לתצוגה=${items.length}; פירוט פריטים=${items.join(", ") || "לא נמצאו נתונים"}`;
     }
 
-    function expandedHeaderDecision(hit, result) {
-      const headerChips = asArray(result.expandedCard.header?.chips);
+    function providerDetailsDecision(hit, result) {
+      const details = result.providerDetails;
+      const headerChips = asArray(details.header?.chips);
       const chipText = headerChips.map((chip) => chip.text).join(", ");
       const chipsDecision = headerChips.length
         ? `header chips נבנו רק מתגיות שב״ן: ${chipText}`
         : `לא נבנו header chips כי shabanType=${hit?.shabanType ?? "null"} אינו יוצר תגית שב״ן`;
-      const sectionNames = Object.keys(result.expandedCard.sections || {}).join(", ") || "לא נבנו אזורי תוכן להצגה";
-      return `header משתמש באותו title/avatar/subtitle של הכרטיס. ${chipsDecision}. sections נבנו רק עבור אזורים שבהם קיים תוכן להצגה: ${sectionNames}`;
+      const sectionNames = Object.keys(details.sections || {}).join(", ") || "לא נבנו אזורי תוכן להצגה";
+      return `providerDetailsById[${result.resultId}] נבנה עם header שמשתמש באותו title/avatar/subtitle של הכרטיס. ${chipsDecision}. sections נבנו רק עבור אזורים שבהם קיים תוכן להצגה: ${sectionNames}`;
     }
 
     function absenceDecision(hit, result) {
       const absence = asArray(hit.absences)[0];
-      const displayItem = asArray(result.expandedCard.sections?.absences?.items)[0];
+      const displayItem = asArray(result.providerDetails.sections?.absences?.items)[0];
       if (!absence || !displayItem) return `לא נבנה טקסט היעדרות כי לא חזרה היעדרות תקפה מה-Agent`;
       const start = formatDateForDisplay(absence.absenceBdate);
       const end = formatDateForDisplay(absence.absenceEdate);
@@ -2162,19 +2198,19 @@
       const agentHits = asArray(agentResponse.hits);
       const byId = new Map(agentHits.map((hit) => [hit.resultId, hit]));
       const sectionCounts = results.reduce((acc, result) => {
-        Object.keys(result.expandedCard.sections || {}).forEach((key) => {
+        Object.keys(result.providerDetails.sections || {}).forEach((key) => {
           acc[key] = (acc[key] || 0) + 1;
         });
         return acc;
       }, {});
       const sourceContacts = agentHits.reduce((sum, hit) => sum + asArray(hit.contacts).length, 0);
-      const displayContacts = results.reduce((sum, result) => sum + countSectionRows(result.expandedCard.sections?.contacts), 0);
+      const displayContacts = results.reduce((sum, result) => sum + countSectionRows(result.providerDetails.sections?.contacts), 0);
       const sourceSchedules = agentHits.reduce((sum, hit) => sum + asArray(hit.schedules).length, 0);
-      const displayScheduleRows = results.reduce((sum, result) => sum + countSectionRows(result.expandedCard.sections?.schedule), 0);
+      const displayScheduleRows = results.reduce((sum, result) => sum + countSectionRows(result.providerDetails.sections?.schedule), 0);
       const sourceTreats = agentHits.reduce((sum, hit) => sum + asArray(hit.servTreats).length, 0);
-      const displayServiceItems = results.reduce((sum, result) => sum + countSectionRows(result.expandedCard.sections?.services), 0);
+      const displayServiceItems = results.reduce((sum, result) => sum + countSectionRows(result.providerDetails.sections?.services), 0);
       const sourceAbsences = agentHits.reduce((sum, hit) => sum + asArray(hit.absences).length, 0);
-      const displayAbsences = results.reduce((sum, result) => sum + countSectionRows(result.expandedCard.sections?.absences), 0);
+      const displayAbsences = results.reduce((sum, result) => sum + countSectionRows(result.providerDetails.sections?.absences), 0);
       const collapsedChips = results.reduce((sum, result) => sum + asArray(result.collapsedCard.chips).length, 0);
       const collapsedMessages = results.reduce((sum, result) => sum + asArray(result.collapsedCard.messages).length, 0);
       const displaySummary = {
@@ -2183,10 +2219,10 @@
         operations: [
           {
             title: "בניית תוצאות לתצוגה",
-            value: `${results.length} תוצאות לתצוגה נבנו מתוך ${agentHits.length} תוצאות Agent`,
+            value: `${results.length} תוצאות לתצוגה נבנו מתוך ${agentHits.length} תוצאות Agent. לכל תוצאה נוסף navigation: { type: "providerDetails", targetId }, כאשר targetId מפנה לרשומה התואמת בתוך providerDetailsById.`,
             details: results.map((result) => {
               const hit = byId.get(result.resultId);
-              return detail(result.resultId, `title נקבע לפי fallback serviceProviderName -> serviceName. נבחר ${chosenField(hit || {}, [{ key: "serviceProviderName", label: "serviceProviderName" }, { key: "serviceName", label: "serviceName" }])}. avatarType נקבע לפי serviceProviderGender="${hit?.serviceProviderGender ?? "null"}" -> ${result.collapsedCard.avatarType}`);
+              return detail(result.resultId, `title נקבע לפי fallback serviceProviderName -> serviceName. נבחר ${chosenField(hit || {}, [{ key: "serviceProviderName", label: "serviceProviderName" }, { key: "serviceName", label: "serviceName" }])}. avatarType נקבע לפי serviceProviderGender="${hit?.serviceProviderGender ?? "null"}" -> ${result.collapsedCard.avatarType}. navigation={type:"providerDetails", targetId:"${result.navigation.targetId}"} מפנה אל providerDetailsById["${result.navigation.targetId}"]`);
             }),
           },
           {
@@ -2200,11 +2236,11 @@
             }),
           },
           {
-            title: "בניית פרטי תוצאה מורחבים",
+            title: "בניית providerDetailsById",
             value: Object.entries(sectionCounts).map(([key, count]) => `${key}: ${count}`).join(", ") || "לא נבנו אזורי תוכן להצגה",
             details: results.map((result) => {
               const hit = byId.get(result.resultId);
-              return detail(result.resultId, expandedHeaderDecision(hit, result));
+              return detail(result.resultId, providerDetailsDecision(hit, result));
             }),
           },
           {
@@ -2246,7 +2282,16 @@
     }
 
     function buildDisplayResponse(agentResponse) {
-      const results = asArray(agentResponse.hits).map(buildDisplayResult).filter(Boolean);
+      const displayItems = asArray(agentResponse.hits).map(buildDisplayResult).filter(Boolean);
+      const results = displayItems.map((item) => item.result);
+      const providerDetailsById = displayItems.reduce((acc, item) => {
+        acc[item.result.resultId] = item.providerDetails;
+        return acc;
+      }, {});
+      const summaryItems = results.map((result) => ({
+        ...result,
+        providerDetails: providerDetailsById[result.resultId],
+      }));
       const response = {
         metadata: {
           requestId: agentResponse.requestId,
@@ -2256,14 +2301,15 @@
         },
         totalResults: results.length,
         results,
+        providerDetailsById,
       };
-      buildDisplaySummary(agentResponse, results);
+      buildDisplaySummary(agentResponse, summaryItems);
       return response;
     }
 
     function runFlow() {
       state.errors = [];
-      state.openCards = new Set();
+      state.selectedProviderId = null;
       state.visibleCount = 10;
       state.orchestratorSummary = null;
       state.displaySummary = null;
@@ -2311,7 +2357,7 @@
       state.orchestratorSummary = null;
       state.displaySummary = null;
       state.errors = [];
-      state.openCards = new Set();
+      state.selectedProviderId = null;
       state.visibleCount = 10;
       state.jsonVisible = {};
       state.previewPanelOpen = false;
@@ -2489,7 +2535,7 @@
               <div class="item-text"><span class="item-result-label">מה יצא: </span>${renderSplitText(item.value)}</div>
               ${asArray(item.details).length ? `
                 <details class="technical-details">
-                  <summary>פירוט טכני</summary>
+                  <summary>פירוט טכני ועסקי</summary>
                   <div class="kv">
                     ${asArray(item.details).map((detail) => `
                       <div class="kv-row">
@@ -2511,7 +2557,7 @@
       return `
         ${renderExplanation([
           { label: "מה נכנס", text: "התקבלה תגובת Agent" },
-          { label: "מה בוצע", text: "נבנו רכיבי התצוגה שה־UI צריך לרנדר" },
+          { label: "מה בוצע", text: "נבנו רכיבי התצוגה שה־UI צריך לרנדר: רשימת results[] למסך התוצאות ומפת providerDetailsById למסך פרטי הרופא." },
           { label: "מה יצא", text: `נוצר ServiceGuideDisplayResponse עם ${state.displaySummary.finalResults} תוצאות לתצוגה` },
         ])}
         <div class="summary-metrics">
@@ -2531,7 +2577,7 @@
               <div class="item-text"><span class="item-result-label">מה יצא: </span>${renderSplitText(item.value)}</div>
               ${asArray(item.details).length ? `
                 <details class="technical-details">
-                  <summary>פירוט טכני</summary>
+                  <summary>פירוט טכני ועסקי</summary>
                   <div class="kv">
                     ${asArray(item.details).map((detail) => `
                       <div class="kv-row">
@@ -2592,7 +2638,7 @@
         }
         return renderExplanation([
           { label: "מה נכנס", text: "התקבלה בקשת החיפוש מה־UI" },
-          { label: "מה בוצע", text: "נוצר requestId, pageSize נקבע ל־50 ו־includeRawSource נקבע לפי הסביבה" },
+          { label: "מה בוצע", text: "נוצר requestId, pageSize נקבע ל־50, ו־includeRawSource נקבע לפי הסביבה: פעיל בסביבות בדיקה וכבוי בסביבת Production." },
           { label: "מה יצא", text: "נוצרה בקשת ServiceGuideSearchAgentRequest לשליחה ל־Agent" },
         ]);
       }
@@ -2641,9 +2687,9 @@
       }
       if (state.selectedStep === "preview") {
         els.workspaceBody.innerHTML = renderExplanation([
-          { label: "מה נכנס", text: "מוצגת הדמיה של מסך התוצאות" },
-          { label: "מה בוצע", text: "התצוגה המקדימה קוראת רק את ServiceGuideDisplayResponse. היא אינה מפרשת קודים, אינה מסננת תוצאות, ואינה בונה טקסטים עסקיים מחדש." },
-          { label: "מה יצא", text: "כך התוצאות צפויות להיראות ב־UI" },
+          { label: "מה נכנס", text: "מוצגת הדמיה של מסך התוצאות ושל מסך פרטי הרופא." },
+          { label: "מה בוצע", text: "לחיצה על תוצאה משתמשת ב־navigation.targetId כדי לפתוח את הרשומה המתאימה מתוך providerDetailsById, וחזרה מחזירה לרשימת התוצאות." },
+          { label: "מה יצא", text: "כך מסך התוצאות ומסך פרטי הרופא צפויים להיראות ב־UI." },
         ]);
         return;
       }
@@ -2717,23 +2763,24 @@
       return `<img class="preview-icon" src="${src}" alt="" aria-hidden="true" loading="lazy" />`;
     }
 
-    function renderSection(section) {
+    function renderSection(section, sectionType) {
       if (!section) return "";
-      const title = `<h3 class="preview-section-title">${escapeHtml(section.title)}</h3>`;
+      const open = sectionType !== "services" ? "open" : "";
+      const title = `<summary class="preview-section-title" onclick="event.stopPropagation()">${escapeHtml(section.title)}</summary>`;
       if (section.items) {
         return `
-          <section class="preview-section-card">
+          <details class="preview-section-card" ${open} onclick="event.stopPropagation()">
             ${title}
             <div class="section-content">
               ${section.items.map(renderContactItem).join("")}
               ${renderMessages(section.messages)}
             </div>
-          </section>
+          </details>
         `;
       }
       if (section.groups) {
         return `
-          <section class="preview-section-card">
+          <details class="preview-section-card" ${open} onclick="event.stopPropagation()">
             ${title}
             <div class="section-content">
               ${section.groups.map((group) => `
@@ -2743,61 +2790,63 @@
                 </details>
               `).join("")}
             </div>
-          </section>
+          </details>
         `;
       }
       if (section.messages || section.city) {
         return `
-          <section class="preview-section-card">
+          <details class="preview-section-card" ${open} onclick="event.stopPropagation()">
             ${title}
             <div class="section-content">
               ${section.city ? `<div>${escapeHtml(section.city)}</div>` : ""}
               ${renderMessages(section.messages)}
             </div>
-          </section>
+          </details>
         `;
       }
       return "";
     }
 
-    function renderResult(result) {
-      const open = state.openCards.has(result.resultId);
-      const card = result.collapsedCard;
-      const header = result.expandedCard.header || card;
-      const sections = result.expandedCard.sections || {};
-      if (open) {
-        return `
-          <article class="search-result-card open" role="button" tabindex="0" onclick="toggleCard('${escapeJs(result.resultId)}')" onkeydown="handleCardKey(event, '${escapeJs(result.resultId)}')">
-            <div class="expanded">
-              <div class="provider-screen">
-                <div class="expanded-hero">
-                  <div class="doctor-avatar">${icon(header.avatarType) || escapeHtml(avatarLetter(header.avatarType))}</div>
-                  <div>
-                    <div class="search-result-name">${escapeHtml(header.title)}</div>
-                    <div class="search-result-meta">${renderTextLines(header.subtitleLines)}</div>
-                    ${header.chips ? `<div class="search-result-footer">${renderChips(header.chips)}</div>` : ""}
-                  </div>
-                </div>
-                ${card.locationText ? `<div class="expanded-location-row">${icon("locationPin")}${escapeHtml(card.locationText)}</div>` : ""}
-                <div class="service-layout">
-                  <div class="service-main-column">
-                    ${renderSection(sections.address)}
-                    ${renderSection(sections.schedule)}
-                    ${renderSection(sections.services)}
-                    ${renderSection(sections.absences)}
-                  </div>
-                  <div class="service-side-column">
-                    ${renderSection(sections.appointments)}
-                    ${renderSection(sections.contacts)}
-                  </div>
-                </div>
+    function renderProviderDetails(details) {
+      const header = details.header || {};
+      const sections = details.sections || {};
+      return `
+        <div class="preview-shell">
+          <div class="preview-head">
+            <button class="button ghost" type="button" onclick="backToResults()">חזרה לתוצאות</button>
+            <span>מסך פרטי רופא</span>
+          </div>
+          <div class="provider-screen">
+            <div class="expanded-hero">
+              <div class="doctor-avatar">${icon(header.avatarType) || escapeHtml(avatarLetter(header.avatarType))}</div>
+              <div>
+                <div class="search-result-name">${escapeHtml(header.title || "")}</div>
+                <div class="search-result-meta">${renderTextLines(header.subtitleLines)}</div>
+                ${header.chips ? `<div class="search-result-footer">${renderChips(header.chips)}</div>` : ""}
               </div>
             </div>
-          </article>
-        `;
-      }
+            ${details.locationText ? `<div class="expanded-location-row">${icon("locationPin")}${escapeHtml(details.locationText)}</div>` : ""}
+            <div class="service-layout">
+              <div class="service-main-column">
+                ${renderSection(sections.address, "address")}
+                ${renderSection(sections.schedule, "schedule")}
+                ${renderSection(sections.services, "services")}
+                ${renderSection(sections.absences, "absences")}
+              </div>
+              <div class="service-side-column">
+                ${renderSection(sections.appointments, "appointments")}
+                ${renderSection(sections.contacts, "contacts")}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderResult(result) {
+      const card = result.collapsedCard;
       return `
-        <article class="search-result-card" role="button" tabindex="0" onclick="toggleCard('${escapeJs(result.resultId)}')" onkeydown="handleCardKey(event, '${escapeJs(result.resultId)}')">
+        <article class="search-result-card" role="button" tabindex="0" onclick="openProviderDetails('${escapeJs(result.navigation?.targetId || result.resultId)}')" onkeydown="handleCardKey(event, '${escapeJs(result.navigation?.targetId || result.resultId)}')">
           <div class="search-result-hero">
             <div class="search-result-avatar">${icon(card.avatarType) || escapeHtml(avatarLetter(card.avatarType))}</div>
             <div>
@@ -2819,6 +2868,14 @@
       if (!response) {
         els.previewBody.innerHTML = `<div class="empty">יש להפעיל את הסימולטור כדי להציג תוצאות</div>`;
         return;
+      }
+      if (state.selectedProviderId) {
+        const details = response.providerDetailsById?.[state.selectedProviderId];
+        if (details) {
+          els.previewBody.innerHTML = renderProviderDetails(details);
+          return;
+        }
+        state.selectedProviderId = null;
       }
       if (!response.results.length) {
         els.previewBody.innerHTML = `<div class="preview-shell"><div class="empty">לא נמצאו תוצאות לחיפוש.</div></div>`;
@@ -2871,9 +2928,9 @@
       render();
     };
 
-    window.toggleCard = function(resultId) {
-      if (state.openCards.has(resultId)) state.openCards.delete(resultId);
-      else state.openCards.add(resultId);
+    window.openProviderDetails = function(targetId) {
+      state.selectedProviderId = targetId;
+      if (history.pushState) history.pushState({ providerId: targetId }, "", `#provider-${encodeURIComponent(targetId)}`);
       render();
     };
 
@@ -2881,8 +2938,25 @@
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
       event.stopPropagation();
-      window.toggleCard(resultId);
+      window.openProviderDetails(resultId);
     };
+
+    window.backToResults = function() {
+      state.selectedProviderId = null;
+      if (location.hash.startsWith("#provider-") && history.pushState) history.pushState({}, "", location.pathname + location.search);
+      render();
+    };
+
+    window.addEventListener("popstate", () => {
+      if (!location.hash.startsWith("#provider-")) {
+        state.selectedProviderId = null;
+        render();
+        return;
+      }
+      const targetId = decodeURIComponent(location.hash.replace("#provider-", ""));
+      state.selectedProviderId = targetId || null;
+      render();
+    });
 
     window.loadMoreResults = function() {
       state.visibleCount += 10;
