@@ -177,6 +177,12 @@
       letter-spacing: 0;
     }
 
+    .title-with-signature {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
     .subtitle {
       margin: 0;
       color: var(--muted);
@@ -186,7 +192,7 @@
 
     .controls {
       display: grid;
-      grid-template-columns: 320px 180px 190px 96px 96px;
+      grid-template-columns: 320px 104px 190px 96px 96px;
       gap: 12px;
       align-items: end;
       justify-content: start;
@@ -549,6 +555,38 @@
 
     .contact-action:hover {
       text-decoration: underline;
+    }
+
+    .creator-signature {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      appearance: none;
+      display: block;
+      border: 1px solid rgba(220, 227, 234, 0.68);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.58);
+      opacity: 0.48;
+      box-shadow: 0 3px 12px rgba(28, 39, 51, 0.07);
+      overflow: hidden;
+      cursor: pointer;
+      flex: none;
+      transition: opacity 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+    }
+
+    .creator-signature:hover,
+    .creator-signature:focus-visible {
+      opacity: 0.86;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(28, 39, 51, 0.12);
+    }
+
+    .creator-signature img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      filter: saturate(0.68) contrast(0.94);
     }
 
     .error-list {
@@ -959,7 +997,7 @@
 
     @media (max-width: 900px) {
       .controls {
-        grid-template-columns: 320px 180px 190px 96px 96px;
+        grid-template-columns: 320px 104px 190px 96px 96px;
         overflow-x: auto;
       }
 
@@ -990,7 +1028,12 @@
       <div class="panel-body header">
         <div class="title-row">
           <div>
-            <h1>מדריך השירותים החדש</h1>
+            <h1 class="title-with-signature">
+              <button class="creator-signature" type="button" title="שאלה בקשר לסימולטור" aria-label="פתיחת שיחה עם אבישג בקשר לסימולטור" onclick="openCreatorContact()">
+                <img src="creator-signature.png" alt="" />
+              </button>
+              <span>מדריך השירותים החדש</span>
+            </h1>
             <p class="subtitle">סימולטור זרימת הנתונים</p>
           </div>
           <div class="status-strip header-status" id="runStatus"></div>
@@ -1004,7 +1047,7 @@
           <div class="field">
             <label for="environment">סביבה</label>
             <select id="environment">
-              <option value="false" selected>Production</option>
+              <option value="false" selected>Prod</option>
               <option value="true">Test / QA</option>
             </select>
           </div>
@@ -2638,7 +2681,7 @@
         }
         return renderExplanation([
           { label: "מה נכנס", text: "התקבלה בקשת החיפוש מה־UI" },
-          { label: "מה בוצע", text: "נוצר requestId, pageSize נקבע ל־50, ו־includeRawSource נקבע לפי הסביבה: פעיל בסביבות בדיקה וכבוי בסביבת Production." },
+          { label: "מה בוצע", text: "נוצר requestId, הוגדר pageSize=50, ו־includeRawSource נקבע לפי הסביבה: true בסביבות Test/QA ו־false בסביבת Prod." },
           { label: "מה יצא", text: "נוצרה בקשת ServiceGuideSearchAgentRequest לשליחה ל־Agent" },
         ]);
       }
@@ -2978,6 +3021,32 @@
       event.preventDefault();
       event.stopPropagation();
       await navigator.clipboard.writeText(value);
+    };
+
+    window.openCreatorContact = function() {
+      const recipient = "kimronav_a@mac.org.il";
+      const message = "היי,\nיש לי שאלה בקשר לסימולטור מדריך השירותים החדש";
+      const subject = "סימולטור מדריך השירותים החדש";
+      const teamsUrl = `msteams:/l/chat/0/0?users=${encodeURIComponent(recipient)}&message=${encodeURIComponent(message)}`;
+      const mailUrl = `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+      let appOpened = false;
+      const markOpened = () => { appOpened = true; };
+      const fallback = window.setTimeout(() => {
+        window.removeEventListener("blur", markOpened);
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+        window.removeEventListener("pagehide", markOpened);
+        if (!appOpened && document.visibilityState === "visible") window.location.href = mailUrl;
+      }, 1400);
+      function handleVisibilityChange() {
+        if (document.visibilityState === "hidden") {
+          markOpened();
+          window.clearTimeout(fallback);
+        }
+      }
+      window.addEventListener("blur", markOpened, { once: true });
+      document.addEventListener("visibilitychange", handleVisibilityChange, { once: true });
+      window.addEventListener("pagehide", markOpened, { once: true });
+      window.location.href = teamsUrl;
     };
 
     window.downloadSimulation = function() {
