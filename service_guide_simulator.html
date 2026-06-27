@@ -725,6 +725,7 @@
       font-size: 12px;
       line-height: 1.5;
       margin-top: 2px;
+      font-family: inherit;
     }
 
     .trace-results {
@@ -732,34 +733,8 @@
     }
 
     .trace-result {
-      padding: 0;
-      overflow: hidden;
-    }
-
-    .trace-result > summary {
-      list-style: none;
-      cursor: pointer;
-      padding: 12px 16px;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 12px;
-      align-items: start;
-    }
-
-    .trace-result > summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .trace-result[open] > summary {
-      border-bottom: 1px solid var(--line);
-      background: var(--surface-2);
-    }
-
-    .trace-area-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      justify-content: flex-start;
+      gap: 8px;
     }
 
     .trace-action-table,
@@ -769,116 +744,126 @@
       overflow: hidden;
     }
 
+    .trace-action-table {
+      width: 100%;
+      margin: 0;
+      border: 0;
+      background: #fff;
+      display: grid;
+      gap: 0;
+    }
+
     .trace-action-head,
     .trace-action-row {
       display: grid;
-      grid-template-columns: minmax(110px, .75fr) minmax(220px, 1.6fr) minmax(150px, .9fr) 132px;
+      grid-template-columns: minmax(160px, .45fr) minmax(240px, 1fr) 24px;
       gap: 10px;
-      align-items: start;
-      padding: 10px 16px;
-      border-bottom: 1px solid var(--line);
-      font-size: 13px;
+      align-items: center;
+      min-height: 40px;
+      padding: 8px 0;
+      border-top: 1px solid var(--line);
+      font-family: inherit;
+      font-size: 14px;
+      text-align: right;
     }
 
     .trace-action-head {
+      display: none;
       color: var(--muted);
       font-size: 12px;
       font-weight: 600;
+      background: #f2f7fa;
+    }
+
+    .trace-action-row {
       background: #fff;
     }
 
-    .trace-action-row:last-child {
+    .trace-area-details {
+      display: block;
+    }
+
+    .trace-area-details > summary {
+      list-style: none;
+      cursor: pointer;
+    }
+
+    .trace-area-details > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .trace-area-details > summary::after {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border: solid var(--primary);
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+      justify-self: center;
+      transition: transform 140ms ease;
+    }
+
+    .trace-area-details[open] > summary::after {
+      transform: rotate(225deg);
+    }
+
+    .trace-area-details:last-child .trace-action-row {
       border-bottom: 0;
     }
 
     .trace-area-label {
-      color: var(--primary);
+      color: #111827;
       font-weight: 600;
     }
 
     .trace-outcome {
       color: #1d2840;
-      font-weight: 600;
+      font-weight: 500;
+      line-height: 1.55;
+      overflow-wrap: anywhere;
+      font-size: 14px;
     }
 
-    .trace-source-cell {
+    .trace-inline-drawer {
+      padding: 8px 0 10px;
+      border-top: 1px solid var(--line);
+      background: #f8fafc;
+    }
+
+    .trace-inline-drawer-inner {
+      border-inline-start: 2px solid #7c8794;
+      padding-inline-start: 10px;
+      background: transparent;
+      overflow: visible;
+    }
+
+    .trace-inline-drawer-head {
+      min-height: 24px;
+      padding: 0;
+      border-bottom: 0;
       display: flex;
-      justify-content: flex-start;
-    }
-
-    .trace-source-button {
-      min-height: 32px;
-      padding: 5px 10px;
-      font-size: 12px;
-      white-space: nowrap;
-    }
-
-    .decision-drawer {
-      position: fixed;
-      top: var(--decision-drawer-top, 16px);
-      right: var(--decision-drawer-right, 16px);
-      bottom: var(--decision-drawer-bottom, 16px);
-      width: var(--decision-drawer-width, min(560px, calc(100vw - 32px)));
-      margin: 0;
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: var(--radius-panel);
-      box-shadow: 0 16px 36px rgba(15, 23, 42, 0.18);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      z-index: 30;
-      animation: drawerFromRight 160ms ease-out;
-    }
-
-    @keyframes drawerFromRight {
-      from {
-        transform: translateX(18px);
-        opacity: 0.88;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
-
-    .decision-drawer-head {
-      min-height: 56px;
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      background: #fff;
-      flex: none;
+      gap: 8px;
+      background: transparent;
     }
 
-    .decision-drawer-title {
-      color: var(--primary);
-      font-size: 18px;
+    .trace-inline-title {
+      color: #111827;
+      font-family: inherit;
+      font-size: 14px;
       font-weight: 700;
       line-height: 1.35;
     }
 
-    .decision-drawer-body {
-      padding: 16px;
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      display: block;
-      min-height: 0;
+    .trace-inline-drawer-body {
+      padding: 7px 0 0;
+      font-family: inherit;
+      font-size: 14px;
     }
 
-    .decision-drawer-body > * + * {
-      margin-top: 12px;
-    }
-
-    .trace-callout {
-      border-right: 2px solid #cfe4ef;
-      padding: 6px 12px 6px 0;
-      color: #1d2840;
-      line-height: 1.6;
+    .trace-inline-drawer-body > * + * {
+      margin-top: 8px;
     }
 
     .transform-table {
@@ -901,34 +886,49 @@
       border-bottom: 0;
     }
 
-    .workspace:not(.preview-hidden) .trace-result > summary,
-    .workspace:not(.preview-hidden) .trace-action-row {
-      grid-template-columns: 1fr;
+    .trace-actions-list {
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      gap: 4px;
+      overflow: visible;
+    }
+
+    .trace-actions-list .transform-row {
+      display: block;
+      padding: 0;
+      border: 0;
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    .trace-actions-list .transform-action::before {
+      content: "- ";
     }
 
     .workspace:not(.preview-hidden) .trace-action-table {
-      gap: 8px;
-      padding: 10px 12px 12px;
+      width: 100%;
+      margin: 0;
+      gap: 0;
+      padding: 0;
       background: #fff;
     }
 
-    .workspace:not(.preview-hidden) .trace-action-head {
-      display: none;
+    .workspace:not(.preview-hidden) .trace-action-row {
+      grid-template-columns: 132px minmax(0, 1fr) 20px;
+      gap: 6px;
+      padding: 8px 10px;
     }
 
     .workspace:not(.preview-hidden) .trace-action-row {
-      border: 1px solid var(--line);
-      border-radius: var(--radius-button);
-      padding: 10px 12px;
-      background: var(--surface);
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+      background: #fff;
     }
 
     .workspace:not(.preview-hidden) .trace-action-row:last-child {
-      border-bottom: 1px solid var(--line);
-    }
-
-    .workspace:not(.preview-hidden) .trace-source-cell {
-      justify-content: flex-start;
+      border-bottom: 0;
     }
 
     .trace-code {
@@ -976,20 +976,25 @@
       white-space: pre-wrap;
     }
 
-    .trace-json-details {
+    .trace-json-section {
       margin-top: 0;
+    }
+
+    .trace-actions-list + .trace-json-section {
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
     }
 
     .trace-json-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 12px;
-      padding-top: 10px;
     }
 
     .trace-json-title {
-      color: var(--muted);
-      font-size: 12px;
+      color: #111827;
+      font-family: inherit;
+      font-size: 13px;
       font-weight: 600;
       margin-bottom: 6px;
     }
@@ -1345,7 +1350,6 @@
         overflow-x: auto;
       }
 
-      .trace-result > summary,
       .trace-action-head,
       .trace-action-row,
       .transform-row,
@@ -1353,8 +1357,8 @@
         grid-template-columns: 1fr;
       }
 
-      .trace-source-cell {
-        justify-content: flex-start;
+      .trace-area-details > summary::after {
+        justify-self: start;
       }
 
       .service-layout {
@@ -1483,6 +1487,7 @@
       bffDecisionTrace: null,
       decisionDrawer: null,
       openTraceResultId: null,
+      lastClosedDecision: null,
       selectedProviderId: null,
       visibleCount: 10,
       errors: [],
@@ -2636,7 +2641,7 @@
             value: `${results.length} תוצאות לתצוגה נבנו מתוך ${agentHits.length} תוצאות Agent. לכל תוצאה נוסף navigation: { type: "providerDetails", targetId }, כאשר targetId מפנה לרשומה התואמת בתוך providerDetailsById.`,
             details: results.map((result) => {
               const hit = byId.get(result.resultId);
-              return detail(result.resultId, `title נקבע לפי fallback serviceProviderName -> serviceName. נבחר ${chosenField(hit || {}, [{ key: "serviceProviderName", label: "serviceProviderName" }, { key: "serviceName", label: "serviceName" }])}. avatarType נקבע לפי serviceProviderGender="${hit?.serviceProviderGender ?? "null"}" -> ${result.collapsedCard.avatarType}. navigation={type:"providerDetails", targetId:"${result.navigation.targetId}"} מפנה אל providerDetailsById["${result.navigation.targetId}"]`);
+              return detail(result.resultId, `title נקבע לפי fallback serviceProviderName -> serviceName. נבחר ${chosenField(hit || {}, [{ key: "serviceProviderName", label: "serviceProviderName" }, { key: "serviceName", label: "serviceName" }])}. avatarType נקבע לפי serviceProviderGender="${hit?.serviceProviderGender ?? "null"}" -> ${result.collapsedCard.avatarType}. נבנה קישור לפרטי הרופא התואמים בתוך providerDetailsById.`);
             }),
           },
           {
@@ -2695,73 +2700,88 @@
       return displaySummary;
     }
 
-    function traceText(value) {
-      if (value === undefined || value === null || value === "") return "לא קיים";
-      if (Array.isArray(value)) {
-        if (!value.length) return "מערך ריק";
-        const primitiveValues = value.filter((item) => item === null || typeof item !== "object").map((item) => String(item)).filter(hasText);
-        if (primitiveValues.length === value.length) {
-          return primitiveValues.join(", ");
-        }
-        return `${value.length} פריטים (פירוט מלא ב־JSON)`;
-      }
-      if (typeof value === "object") {
-        const keys = Object.keys(value);
-        return keys.length ? `אובייקט עם שדות: ${keys.join(", ")}` : "אובייקט ריק";
-      }
-      return String(value);
-    }
-
-    function traceRow(field, agentValue, action, displayValue) {
-      return {
-        field,
-        agentValue: traceText(agentValue),
-        action,
-        displayValue: traceText(displayValue),
-      };
-    }
-
     function traceJson(value) {
       if (value === undefined || value === null) return null;
       return value;
     }
 
-    function traceArea(key, label, businessAction, outcome, transformations, sourceJson, displayJson) {
+    function removeFinalPeriod(value) {
+      return hasText(value) ? String(value).trim().replace(/[.。]+$/u, "") : value;
+    }
+
+    function traceArea(key, label, displayText, actions, sourceJson, displayJson) {
       return {
         key,
         label,
-        businessAction,
-        outcome,
-        transformations: transformations.filter(Boolean),
+        displayText: removeFinalPeriod(displayText),
+        actions: actions.filter(Boolean).map(removeFinalPeriod),
         sourceJson: traceJson(sourceJson),
         displayJson: traceJson(displayJson),
       };
     }
 
+    function hebrewJoin(items) {
+      const clean = asArray(items).filter(hasText);
+      if (clean.length <= 1) return clean.join("");
+      const withAnd = (value) => (/^\d/.test(String(value).trim()) ? `ו־${value}` : `ו${value}`);
+      if (clean.length === 2) return `${clean[0]} ${withAnd(clean[1])}`;
+      return `${clean.slice(0, -1).join(", ")} ${withAnd(clean[clean.length - 1])}`;
+    }
+
+    function countLabel(count, singular, plural) {
+      return Number(count) === 1 ? singular : `${count} ${plural}`;
+    }
+
+    function displayListText(items, fallback = "לא נמצא מידע להצגה באזור זה") {
+      const text = hebrewJoin(items);
+      return text || fallback;
+    }
+
+    function contactItemKey(item) {
+      return `${item.type}:${item.text}`;
+    }
+
+    function serviceItemCountText(count) {
+      if (count === 1) return "טיפול אחד";
+      if (count === 2) return "2 טיפולים";
+      return `${count} טיפולים`;
+    }
+
     function traceCard(hit, result, details) {
       const card = result.collapsedCard || {};
-      const transformations = [
-        traceRow(
-          hasText(hit.serviceProviderName) ? "serviceProviderName" : "serviceName",
-          hasText(hit.serviceProviderName) ? hit.serviceProviderName : hit.serviceName,
-          "נבחר שם ראשון שקיים לפי סדר עדיפות: שם נותן שירות ואז שם שירות.",
-          `collapsedCard.title = ${card.title || "לא נוצר"}`
-        ),
-        traceRow("serviceProviderGender", hit.serviceProviderGender, "הומר לסוג אווטאר להצגה.", `avatarType = ${card.avatarType || "לא נוצר"}`),
-        traceRow("specializationList / serviceNameDoc", hit.specializationList?.length ? hit.specializationList : hit.serviceNameDoc, "נבנתה שורת התמחות רק אם נמצא טקסט.", asArray(card.subtitleLines).find((line) => line.type === "specialization")?.text || "לא נוצרה שורה"),
-        traceRow("treatAreaList / treatAreaString / profArea", hit.treatAreaList?.length ? hit.treatAreaList : (hit.treatAreaString || hit.profArea), "נבנתה שורת תחום מקצועי לפי סדר עדיפות.", asArray(card.subtitleLines).find((line) => line.type === "professionalization")?.text || "לא נוצרה שורה"),
-        traceRow("languages / languageList", hit.languages?.length ? hit.languages : hit.languageList, "שפות סודרו לפי סדר אם קיים, אחרת פוצלו מרשימת טקסט.", asArray(card.subtitleLines).find((line) => line.type === "languages")?.text || "לא נוצרה שורה"),
-        traceRow("accessibilityBool + accessibility", `${hit.accessibilityBool} + ${hit.accessibility || ""}`, "נבדק האם להוסיף תגית נגישות.", asArray(card.chips).find((chip) => chip.type === "accessibility")?.text || "לא נוספה תגית"),
-        traceRow("shabanType", hit.shabanType, "נבדק אילו תגיות שב״ן להוסיף.", shabanChips(hit).map((chip) => chip.text).join(", ") || "לא נוספו תגיות שב״ן"),
-        traceRow("membershipStatusCode", hit.membershipStatusCode, "נבדק האם להוסיף תגית אי קבלת חברים חדשים.", asArray(card.chips).find((chip) => chip.type === "limitedMembership")?.text || "לא נוספה תגית"),
-        traceRow("remarks + absences", `${asArray(hit.remarks).length} הערות, ${asArray(hit.absences).length} היעדרויות`, "הודעות כרטיס נלקחו מהערה ומהיעדרות שנבחרו על ידי ה-Agent.", asArray(card.messages).map((message) => message.type).join(", ") || "לא נוצרו הודעות"),
-      ];
+      const subtitleTypes = new Set(asArray(card.subtitleLines).map((line) => line.type));
+      const chipTypes = new Set(asArray(card.chips).map((chip) => chip.type));
+      const messageTypes = new Set(asArray(card.messages).map((message) => message.type));
+      const components = ["שם נותן השירות"];
+      if (subtitleTypes.has("specialization")) components.push("מומחיות");
+      if (subtitleTypes.has("professionalization")) components.push("התמחויות");
+      if (subtitleTypes.has("languages")) components.push("שפות");
+      if (chipTypes.has("accessibility")) components.push("תגית נגישות");
+      const shabanCount = asArray(card.chips).filter((chip) => String(chip.type || "").startsWith("shaban")).length;
+      if (shabanCount) components.push(shabanCount === 1 ? "תגית שב״ן" : "תגיות שב״ן");
+      if (chipTypes.has("limitedMembership")) components.push("תגית לא מקבל חברים חדשים");
+      if (messageTypes.has("remark10")) components.push("הערה");
+      if (messageTypes.has("absence")) components.push("הודעת היעדרות");
+      const actions = [];
+      if (!hasText(hit.serviceProviderName) && hasText(hit.serviceName)) {
+        actions.push("לא התקבל שם נותן שירות, ולכן שם השירות שימש ככותרת הכרטיס.");
+      }
+      if (!asArray(hit.specializationList).filter(hasText).length && hasText(hit.serviceNameDoc) && subtitleTypes.has("specialization")) {
+        actions.push("לא התקבלה מומחיות ברשימת specializationList, ולכן serviceNameDoc שימש כמומחיות.");
+      }
+      if (!asArray(hit.treatAreaList).some((item) => hasText(item.treatArea)) && hasText(hit.treatAreaString) && subtitleTypes.has("professionalization")) {
+        actions.push("לא התקבלה רשימת התמחויות ב־treatAreaList, ולכן treatAreaString שימש כהתמחויות.");
+      } else if (!asArray(hit.treatAreaList).some((item) => hasText(item.treatArea)) && !hasText(hit.treatAreaString) && asArray(hit.profArea).some((item) => hasText(item.professAreaDesc)) && subtitleTypes.has("professionalization")) {
+        actions.push("לא התקבלו התמחויות ב־treatAreaList או ב־treatAreaString, ולכן profArea שימש כהתמחויות.");
+      }
+      if (!asArray(hit.languages).some((item) => hasText(item.language)) && hasText(hit.languageList) && subtitleTypes.has("languages")) {
+        actions.push("לא התקבלה רשימת שפות מובנית, ולכן languageList פוצל לרשימת שפות לתצוגה.");
+      }
       return traceArea(
         "card",
-        "כרטיס תוצאה",
-        "נבחרו רכיבי הכרטיס שה־UI מציג ברשימת התוצאות: שם, אווטאר, שורות משנה, תגיות והודעות.",
-        `${asArray(card.subtitleLines).length} שורות משנה, ${asArray(card.chips).length} תגיות, ${asArray(card.messages).length} הודעות`,
-        transformations,
+        "כרטיס בתוצאות החיפוש",
+        displayListText(components),
+        actions,
         {
           resultId: hit.resultId,
           serviceProviderName: hit.serviceProviderName,
@@ -2792,86 +2812,83 @@
     function traceAddress(hit, details) {
       const section = details.sections?.address;
       const messages = asArray(section?.messages);
-      const transformations = [
-        traceRow("cityName", hit.cityName, "אם קיימת עיר, היא נכנסת לאזור הכתובת ולכרטיס.", section?.city || details.locationText || "לא נוצר"),
-        traceRow("accessibilityBool + accessibility", `${hit.accessibilityBool} + ${hit.accessibility || ""}`, "אם התוצאה נגישה, נוספת הודעת נגישות באזור הכתובת.", messages.find((message) => message.type === "accessibility")?.text || "לא נוספה הודעה"),
-        traceRow("remarks[]", hit.remarks, "הערות שנבחרו על ידי ה-Agent נכנסות כהודעות כתובת.", messages.filter((message) => message.type === "remark10").map((message) => message.text).join(", ") || "לא נוספה הערה"),
-      ];
+      if (!section) return null;
+      const parts = [];
+      if (hasText(section.city)) parts.push(section.city);
+      if (messages.some((message) => message.type === "accessibility")) parts.push("הודעת נגישות");
+      const remarkCount = messages.filter((message) => message.type === "remark10").length;
+      if (remarkCount) parts.push(countLabel(remarkCount, "הערת חירום אחת", "הערות חירום"));
+      const actions = [];
+      if (hit.accessibilityBool === true && !hasText(hit.accessibility) && messages.some((message) => message.type === "accessibility")) {
+        actions.push("התקבל סימון נגישות ללא טקסט, ולכן הוצג טקסט ברירת מחדל: \"נגיש\".");
+      }
       return traceArea(
         "address",
         "כתובת",
-        section ? "נבנה אזור כתובת כאשר קיימת עיר או הודעה להצגה." : "לא נבנה אזור כתובת כי לא נמצאו עיר או הודעות להצגה.",
-        section ? `${countSectionRows(section)} רכיבי תוכן` : "לא נבנה",
-        transformations,
+        displayListText(parts),
+        actions,
         { cityName: hit.cityName, accessibilityBool: hit.accessibilityBool, accessibility: hit.accessibility, remarks: hit.remarks },
-        section || null
+        section
       );
     }
 
     function traceAppointments(hit, details) {
       const section = details.sections?.appointments;
+      if (!section) return null;
       return traceArea(
         "appointments",
         "זימון תורים",
-        section ? "נבנה אזור זימון תורים כי התוצאה מסומנת כלא מקבלת חברים חדשים." : "לא נבנה אזור זימון תורים כי אין הגבלת קבלת חברים חדשים.",
-        section ? "נוצרה הודעת לא מקבל חברים חדשים" : "לא נבנה",
-        [
-          traceRow(
-            "membershipStatusCode",
-            hit.membershipStatusCode,
-            "נבדק האם הערך הוא LIMITED.",
-            section ? asArray(section.messages).map((message) => message.text).join(", ") : "לא נוצר"
-          ),
-        ],
+        displayListText(asArray(section.messages).map((message) => message.text)),
+        [],
         { membershipStatusCode: hit.membershipStatusCode },
-        section || null
+        section
       );
     }
 
     function traceContacts(hit, details) {
       const section = details.sections?.contacts;
+      if (!section) return null;
       const displayItems = asArray(section?.items);
       const seen = new Set();
-      const transformations = asArray(hit.contacts).map((row, index) => {
+      const validSourceOrder = [];
+      let emptyCount = 0;
+      let unknownTypeCount = 0;
+      let duplicateCount = 0;
+      asArray(hit.contacts).forEach((row) => {
         const text = hasText(row.contactDetail) ? String(row.contactDetail).trim() : "";
         const meta = contactTypeByRow(row);
-        let action = "פריט הקשר עבר ניקוי וסיווג לפי קוד.";
-        let displayValue = "לא נוצר";
         if (!hasText(text)) {
-          action = "הושמט כי פרטי הקשר ריקים.";
+          emptyCount += 1;
         } else if (!hasText(meta.label)) {
-          action = "הושמט כי לא נמצא שם סוג קשר להצגה.";
+          unknownTypeCount += 1;
         } else {
           const key = `${meta.type}:${text}`;
           if (seen.has(key)) {
-            action = "הושמט כי זוהתה כפילות לפי סוג קשר וטקסט.";
+            duplicateCount += 1;
           } else {
             seen.add(key);
-            const display = displayItems.find((item) => item.type === meta.type && item.text === text);
-            displayValue = display ? `${display.label}: ${display.text}${display.actionType ? `, פעולה=${display.actionType}` : ""}` : "לא נמצא בפריטי התצוגה";
-            action = `זוהה כסוג "${meta.label}", הוסר order פנימי ונוספה פעולת UI אם נדרשת.`;
+            validSourceOrder.push(key);
           }
         }
-        return traceRow(`contacts[${index}]`, {
-          contactCode: row.contactCode,
-          contactDesc: row.contactDesc,
-          contactDetail: row.contactDetail,
-        }, action, displayValue);
       });
-      if (asArray(section?.messages).some((message) => message.type === "emailDisclaimer")) {
-        transformations.push(traceRow("contacts[].type=email", "נמצא פריט דוא״ל", "נוספה הודעת הבהרה לאזור אמצעי הקשר.", "emailDisclaimer"));
+      const actions = [];
+      if (emptyCount) actions.push(`${emptyCount} פרטי קשר הושמטו כי לא התקבל ערך להצגה.`);
+      if (unknownTypeCount) actions.push(`${unknownTypeCount} פרטי קשר הושמטו כי לא נמצא להם סוג קשר להצגה.`);
+      if (duplicateCount) actions.push(`${duplicateCount} פרטי קשר כפולים הוסרו לפי סוג קשר וערך.`);
+      const displayOrder = displayItems.map(contactItemKey);
+      if (validSourceOrder.length > 1 && displayOrder.join("|") !== validSourceOrder.join("|")) {
+        actions.push("אמצעי הקשר מוינו לפי סדר התצוגה העסקי.");
       }
-      if (!transformations.length) {
-        transformations.push(traceRow("contacts[]", hit.contacts, "לא נמצאו פרטי קשר ב־AgentResponse ולכן לא נבנה אזור אמצעי קשר.", "לא נוצר"));
+      if (asArray(section?.messages).some((message) => message.type === "emailDisclaimer")) {
+        actions.push("נמצא דוא״ל, ולכן נוספה הודעת הבהרה לאזור אמצעי הקשר.");
       }
       return traceArea(
         "contacts",
         "אמצעי קשר",
-        section ? "פרטי קשר ריקים הושמטו, סוגי קשר זוהו לפי קוד, כפילויות הוסרו והפריטים מוינו בסדר עסקי קבוע." : "לא נבנה אזור אמצעי קשר כי לא נשארו פרטי קשר תקינים להצגה.",
-        section ? `${displayItems.length} מתוך ${asArray(hit.contacts).length} פריטים הוצגו` : `0 מתוך ${asArray(hit.contacts).length} פריטים הוצגו`,
-        transformations,
+        displayListText(displayItems.map((item) => item.label)),
+        actions,
         { contacts: hit.contacts },
-        section || null
+        section
       );
     }
 
@@ -2881,37 +2898,27 @@
 
     function traceSchedule(hit, details) {
       const section = details.sections?.schedule;
+      if (!section) return null;
       const displayGroups = asArray(section?.groups);
-      const transformations = asArray(hit.schedules).map((row, index) => {
+      const actions = [];
+      let omittedCount = 0;
+      let normalizedCount = 0;
+      asArray(hit.schedules).forEach((row) => {
         const typeMeta = scheduleMap[Number(row.scheduleType)];
         const dayOk = validWeekDay(row.availabilityWeekDay);
         const start = normalizeTime(row.availabilityStartTime);
         const end = normalizeTime(row.availabilityEndTime);
         const hasRawStart = hasText(row.availabilityStartTime);
         const hasRawEnd = hasText(row.availabilityEndTime);
-        let action = "נבדקו סוג שעות, יום ושעת התחלה/סיום.";
-        let displayValue = "לא נוצר";
-        if (!typeMeta) {
-          action = "הושמט כי סוג השעות אינו מוצג ב־UI.";
-        } else if (!dayOk) {
-          action = "הושמט כי יום הפעילות אינו בטווח תקין.";
-        } else if (start && end) {
-          action = "השעה נורמלה לפורמט אחיד ושויכה לקבוצת השעות המתאימה.";
-          displayValue = `${typeMeta.title}: ${dayLabel(row.availabilityWeekDay)} ${start} עד ${end}`;
-        } else if (!hasRawStart && !hasRawEnd && Number(row.availabilityWeekDay) !== 7) {
-          action = "רשומת יום ללא שעות הומרה לשורת סגור.";
-          displayValue = `${typeMeta.title}: ${dayLabel(row.availabilityWeekDay)} סגור`;
-        } else {
-          action = "הושמט כי שעת התחלה או סיום חסרה או לא ניתנת לפענוח.";
+        if (!typeMeta || !dayOk || ((hasRawStart || hasRawEnd) && !(start && end))) {
+          omittedCount += 1;
         }
-        return traceRow(`schedules[${index}]`, {
-          scheduleType: row.scheduleType,
-          day: row.availabilityWeekDay,
-          start: row.availabilityStartTime,
-          end: row.availabilityEndTime,
-          frequencyDesc: row.frequencyDesc,
-        }, action, displayValue);
+        if (typeMeta && dayOk && start && end && (start !== String(row.availabilityStartTime || "").trim() || end !== String(row.availabilityEndTime || "").trim())) {
+          normalizedCount += 1;
+        }
       });
+      if (omittedCount) actions.push(`${omittedCount} רשומות שעות הושמטו כי סוג השעות, היום או השעות עצמן לא תקינים להצגה.`);
+      if (normalizedCount) actions.push(`${normalizedCount} רשומות שעות נורמלו לפורמט שעה אחיד.`);
 
       const rowsByType = asArray(hit.schedules).reduce((acc, row) => {
         if (!scheduleMap[Number(row.scheduleType)] || !validWeekDay(row.availabilityWeekDay)) return acc;
@@ -2923,130 +2930,94 @@
         const displayRows = scheduleRowsForGroup(sourceRows);
         const coveredDays = new Set(displayRows.map((row) => Number(row.availabilityWeekDay)));
         const sourceDays = new Set(sourceRows.map((row) => Number(row.availabilityWeekDay)).filter((day) => Number.isInteger(day) && day >= 1 && day <= 6));
+        let completedCount = 0;
         for (let day = 1; day <= 6; day += 1) {
           if (coveredDays.has(day) && !sourceDays.has(day)) {
-            transformations.push(traceRow(
-              `${scheduleGroupTitle(scheduleType)} יום ${dayLabel(day)}`,
-              "לא קיימת רשומת מקור ב-Agent",
-              "הושלם על ידי ה־BFF כיום חסר.",
-              `${dayLabel(day)}: סגור`
-            ));
+            completedCount += 1;
           }
         }
+        if (completedCount) actions.push(`${scheduleGroupTitle(scheduleType)}: ${completedCount} ימים שלא התקבלו במקור הושלמו כ"סגור".`);
       });
+      let mergedCount = 0;
       displayGroups.forEach((group) => {
-        asArray(group.rows).filter((row) => String(row.dayText || "").includes("עד")).forEach((row) => {
-          transformations.push(traceRow(
-            `${group.title} ${row.dayText}`,
-            "כמה ימים רצופים עם אותה תבנית",
-            "ימים רצופים עם אותן שעות ואותה הערה אוחדו לשורה אחת.",
-            `${row.dayText}: ${row.hoursText}${row.notes ? ` (${row.notes})` : ""}`
-          ));
-        });
+        mergedCount += asArray(group.rows).filter((row) => String(row.dayText || "").includes("עד")).length;
       });
-      if (!transformations.length) {
-        transformations.push(traceRow("schedules[]", hit.schedules, "לא נמצאו רשומות שעות ב־AgentResponse ולכן לא נבנה אזור שעות פעילות.", "לא נוצר"));
-      }
-
-      const displayRowCount = displayGroups.reduce((sum, group) => sum + asArray(group.rows).length, 0);
+      if (mergedCount) actions.push(`ימים רצופים עם אותן שעות ואותה הערה הוצגו כטווח ימים, במקום שורה נפרדת לכל יום.`);
+      const groupTitles = displayGroups.map((group) => group.title);
+      const hasClosedRows = displayGroups.some((group) => asArray(group.rows).some((row) => row.hoursText === "סגור"));
+      const displayText = hasClosedRows
+        ? `${hebrewJoin(groupTitles)}. ימים שלא התקבלו במקור: "סגור".`
+        : displayListText(groupTitles);
       return traceArea(
         "schedule",
         "שעות פעילות",
-        section ? "שעות קובצו לפי סוג, ימים ושעות נבדקו, שעות נורמלו, ימים חסרים א׳-ו׳ הושלמו כ'סגור', וימים רצופים אוחדו." : "לא נבנה אזור שעות פעילות כי לא נמצאו רשומות שעות תקינות להצגה.",
-        section ? `${displayGroups.length} קבוצות, ${displayRowCount} שורות תצוגה` : `0 שורות מתוך ${asArray(hit.schedules).length} רשומות`,
-        transformations,
+        displayText,
+        actions,
         { schedules: hit.schedules },
-        section || null
+        section
       );
     }
 
     function traceServices(hit, details) {
       const section = details.sections?.services;
-      const transformations = asArray(hit.servTreats).map((row, index) => {
+      if (!section) return null;
+      const groups = asArray(section?.groups);
+      const actions = [];
+      let omittedCount = 0;
+      let cleanedCodeCount = 0;
+      asArray(hit.servTreats).forEach((row) => {
         const text = firstText(row.sgTreatName, row.cellTreatName, row.hebrewText, row.hebrewServiceName);
         const code = firstText(row.cptCode, extractServiceCode(text));
         if (!hasText(text)) {
-          return traceRow(`servTreats[${index}]`, row, "הושמט כי לא נמצא שם טיפול להצגה, גם אם קיים קוד טיפול.", "לא נוצר");
+          omittedCount += 1;
+          return;
         }
-        const groupTitle = hasText(row.cptPubtName) ? row.cptPubtName : "טיפולים נוספים";
         const displayText = cleanServiceText(text, code);
-        return traceRow(
-          `servTreats[${index}]`,
-          {
-            sgTreatName: row.sgTreatName,
-            cellTreatName: row.cellTreatName,
-            hebrewText: row.hebrewText,
-            hebrewServiceName: row.hebrewServiceName,
-            cptCode: row.cptCode,
-            cptPubtName: row.cptPubtName,
-            coverageCode: row.coverageCode,
-          },
-          "נבחר שם טיפול לפי סדר עדיפות, קוד טיפול נוקה מהטקסט אם הופיע בו, והפריט שויך לקבוצה.",
-          `${groupTitle}: ${displayText} (${row.coverageCode === "COMPLEMENTARY" ? "משלים" : "בסל"})`
-        );
+        if (hasText(code) && displayText !== String(text).trim()) cleanedCodeCount += 1;
       });
-      if (!transformations.length) {
-        transformations.push(traceRow("servTreats[]", hit.servTreats, "לא נמצאו טיפולים ב־AgentResponse ולכן לא נבנה אזור ניתוחים וטיפולים.", "לא נוצר"));
+      if (omittedCount) actions.push(`${omittedCount} טיפולים הושמטו כי לא התקבל שם טיפול להצגה.`);
+      if (cleanedCodeCount) actions.push(`${cleanedCodeCount} שמות טיפול עברו ניקוי של קוד טיפול שהופיע בתוך הטקסט.`);
+      const fallbackGroup = groups.find((group) => group.title === "טיפולים נוספים");
+      if (fallbackGroup) {
+        actions.push("טיפולים ללא קבוצת טיפול קובצו תחת \"טיפולים נוספים\", והקבוצה נשלחה אחרונה ברשימת הקבוצות.");
       }
-      const groups = asArray(section?.groups);
       const displayItems = groups.reduce((sum, group) => sum + asArray(group.items).length, 0);
+      const groupParts = groups.map((group) => {
+        const count = asArray(group.items).length;
+        return group.title === "טיפולים נוספים"
+          ? `${serviceItemCountText(count)} תחת "טיפולים נוספים"`
+          : `${serviceItemCountText(count)} בקבוצת "${group.title}"`;
+      });
       return traceArea(
         "services",
         "ניתוחים וטיפולים",
-        section ? "טיפולים בלי שם הושמטו, שמות נבחרו לפי סדר עדיפות, קוד טיפול נוקה מהטקסט אם הופיע בו, והפריטים קובצו לפי קבוצת טיפול." : "לא נבנה אזור ניתוחים וטיפולים כי לא נמצאו טיפולים עם שם להצגה.",
-        section ? `${groups.length} קבוצות, ${displayItems} פריטים` : `0 מתוך ${asArray(hit.servTreats).length} פריטים הוצגו`,
-        transformations,
+        `${displayItems} ${displayItems === 1 ? "טיפול" : "טיפולים"}: ${hebrewJoin(groupParts)}.`,
+        actions,
         { servTreats: hit.servTreats },
-        section || null
+        section
       );
     }
 
     function traceAbsences(hit, details) {
       const section = details.sections?.absences;
+      if (!section) return null;
       const displayItems = asArray(section?.items);
-      const transformations = asArray(hit.absences).map((absence, index) => traceRow(
-        `absences[${index}]`,
-        absence,
-        "נבנה טקסט תצוגה, התאריך הומר לפורמט קריא והניסוח הותאם למגדר.",
-        displayItems[index]?.text || "לא נוצר"
-      ));
+      const actions = [];
+      if (displayItems.length) actions.push("נבנה טקסט היעדרות מטווח התאריכים שהתקבל מה-Agent.");
       const substitute = asArray(hit.substitutes)[0];
-      if (substitute) {
-        transformations.push(traceRow(
-          "substitutes[0]",
-          substitute,
-          "אם קיים ממלא מקום עם שם, הוא נוסף לטקסט ההיעדרות.",
-          hasText(substitute.subName) ? `ממלא מקום: ${substitute.subName}` : "לא נוסף"
-        ));
+      if (substitute && hasText(substitute.subName)) {
+        actions.push(`ממלא מקום נוסף לטקסט ההיעדרות: ${substitute.subName}.`);
       }
       if (displayItems.some((item) => hasText(item.reason))) {
-        transformations.push(traceRow("absenceReason", asArray(hit.absences)[0]?.absenceReason, "סיבה קיימת מוצגת כשדה נפרד בפרטי ההיעדרות.", displayItems.find((item) => hasText(item.reason))?.reason));
-      }
-      if (!transformations.length) {
-        transformations.push(traceRow("absences[]", hit.absences, "לא התקבלה היעדרות תקפה ב־AgentResponse ולכן לא נבנה אזור היעדרויות.", "לא נוצר"));
+        actions.push("סיבת היעדרות התקבלה כערך שמותר להציג, ולכן נוספה בפרטי ההיעדרות.");
       }
       return traceArea(
         "absences",
         "היעדרויות",
-        section ? "ה־BFF בנה טקסט היעדרות מהמידע שה־Agent בחר, הוסיף ממלא מקום אם קיים והציג סיבה כשיש ערך מתאים." : "לא נבנה אזור היעדרויות כי ה־AgentResponse לא כלל היעדרות תקפה להצגה.",
-        section ? `${displayItems.length} הודעות היעדרות` : "לא נבנה",
-        transformations,
+        displayListText(displayItems.map((item) => item.text)),
+        actions,
         { absences: hit.absences, substitutes: hit.substitutes },
-        section || null
-      );
-    }
-
-    function traceProviderDetails(hit, result, details) {
-      return traceArea(
-        "providerDetails",
-        "פרטי ספק",
-        "נבנתה רשומת פרטים מלאה לפי resultId. בנוסף ה־BFF יצר יעד ניווט בתוצר כדי שה־UI יפתח את אותה רשומה.",
-        "נוצרה רשומת פרטים ויעד ניווט לתצוגה",
-        [
-          traceRow("resultId", hit.resultId, "שימש כמפתח לבניית רשומת הפרטים וליצירת יעד הניווט בתוצר.", "רשומת פרטים + יעד ניווט"),
-        ],
-        { resultId: hit.resultId },
-        { navigation: result.navigation, providerDetails: details }
+        section
       );
     }
 
@@ -3064,8 +3035,7 @@
           traceSchedule(hit, details),
           traceServices(hit, details),
           traceAbsences(hit, details),
-          traceProviderDetails(hit, result, details),
-        ];
+        ].filter(Boolean);
         return {
           resultId: result.resultId,
           title: result.collapsedCard?.title || result.resultId,
@@ -3114,6 +3084,7 @@
       state.bffDecisionTrace = null;
       state.decisionDrawer = null;
       state.openTraceResultId = null;
+      state.lastClosedDecision = null;
       state.jsonVisible = {};
       state.explanationOpen = false;
       const uiRequest = buildUiRequest();
@@ -3148,6 +3119,7 @@
         state.bffDecisionTrace = null;
         state.decisionDrawer = null;
         state.openTraceResultId = null;
+        state.lastClosedDecision = null;
         state.selectedStep = missingQuery ? "ui" : "searchResponse";
         state.headerCollapsed = false;
       }
@@ -3164,6 +3136,7 @@
       state.bffDecisionTrace = null;
       state.decisionDrawer = null;
       state.openTraceResultId = null;
+      state.lastClosedDecision = null;
       state.errors = [];
       state.selectedProviderId = null;
       state.visibleCount = 10;
@@ -3387,135 +3360,86 @@
       const traceRows = asArray(state.bffDecisionTrace.rows);
       const visibleRows = traceRows.slice(0, state.visibleCount);
       return `
-        ${renderExplanation([
-          { label: "מה נכנס", text: "התקבלה תגובת Agent" },
-          { label: "מה בוצע", text: "ה־BFF הפך כל תוצאת Agent לרכיבי תצוגה, ותיעד לכל אזור מה נבדק, איזו פעולה בוצעה ומה נוצר ב־DisplayResponse." },
-          { label: "מה יצא", text: `נוצר ServiceGuideDisplayResponse עם ${state.displaySummary.finalResults} תוצאות, ולכל תוצאה נבנה פירוט פעולות לפי אזורי תצוגה.` },
-        ])}
-        <div class="summary-metrics">
-          <div class="metric">
-            <div class="metric-value">${state.displaySummary.sourceHits}</div>
-            <div class="metric-label">תוצאות שהתקבלו מה-Agent</div>
-          </div>
-          <div class="metric">
-            <div class="metric-value">${state.displaySummary.finalResults}</div>
-            <div class="metric-label">תוצאות שנבנו לתצוגה</div>
-          </div>
-        </div>
         <div class="trace-section-head">
           <div>
-            <div class="item-title">פירוט פעולות לפי תוצאה</div>
-            <div class="trace-muted">מוצגות ${visibleRows.length} מתוך ${traceRows.length} תוצאות, בהתאם לכמות התוצאות שנטענה בתצוגה המקדימה. בכל אזור אפשר לפתוח את מקור ההחלטה ולראות AgentResponse מול DisplayResponse.</div>
+            <div class="item-title">פירוט בניית כל תוצאה</div>
+            <div class="trace-muted">מוצגות ${visibleRows.length} מתוך ${traceRows.length} תוצאות</div>
           </div>
         </div>
         <div class="summary-list trace-results">
           ${visibleRows.map(renderBffTraceResult).join("")}
         </div>
-        ${renderDecisionDrawer()}
       `;
-    }
-
-    function areaChipText(key) {
-      return ({
-        address: "כתובת",
-        appointments: "זימון",
-        contacts: "קשר",
-        schedule: "שעות",
-        services: "טיפולים",
-        absences: "היעדרויות",
-      })[key] || key;
     }
 
     function renderBffTraceResult(row) {
-      const builtLabels = asArray(row.builtAreas).map(areaChipText);
       return `
-        <details class="summary-item trace-result" ${state.openTraceResultId === row.resultId ? "open" : ""}>
-          <summary class="trace-result-summary">
-            <div>
-              <div class="item-title">${escapeHtml(row.title)}</div>
-              <div class="trace-muted">${escapeHtml(row.resultId)} · דירוג ${Number(row.rank) + 1} · sourceRank ${row.sourceRank}</div>
-            </div>
-            <div class="trace-area-chips">
-              ${(builtLabels.length ? builtLabels : ["ללא אזורי תוכן"]).map((label) => `<span class="pill">${escapeHtml(label)}</span>`).join("")}
-            </div>
-          </summary>
-          <div class="trace-action-table" role="table" aria-label="פעולות BFF">
-            <div class="trace-action-head" role="row">
-              <div role="columnheader">אזור בתצוגה</div>
-              <div role="columnheader">מה ה־BFF עשה</div>
-              <div role="columnheader">תוצאה תפעולית</div>
-              <div role="columnheader"></div>
-            </div>
+        <div class="summary-item trace-result">
+          <div class="item-title">${escapeHtml(row.title)}</div>
+          <div class="trace-action-table" role="table" aria-label="פירוט BFF ל־UI">
             ${asArray(row.areas).map((area) => renderBffTraceArea(row, area)).join("")}
-          </div>
-        </details>
-      `;
-    }
-
-    function renderBffTraceArea(row, area) {
-      return `
-        <div class="trace-action-row" role="row">
-          <div class="trace-area-label" role="cell">${escapeHtml(area.label)}</div>
-          <div role="cell">${escapeHtml(area.businessAction)}</div>
-          <div class="trace-outcome" role="cell">${escapeHtml(area.outcome)}</div>
-          <div class="trace-source-cell" role="cell">
-            <button class="button ghost trace-source-button" type="button" onclick="openDecisionSource('${escapeJs(row.resultId)}', '${escapeJs(area.key)}')">מקור ההחלטה</button>
           </div>
         </div>
       `;
     }
 
-    function renderDecisionDrawer() {
-      const drawer = state.decisionDrawer;
-      if (!drawer || !state.bffDecisionTrace) return "";
-      const resultTrace = state.bffDecisionTrace.byResultId?.[drawer.resultId];
-      const area = resultTrace && asArray(resultTrace.areas).find((item) => item.key === drawer.areaKey);
-      if (!resultTrace || !area) return "";
+    function renderBffTraceArea(row, area) {
+      const isDrawerSource = state.decisionDrawer?.resultId === row.resultId && state.decisionDrawer?.areaKey === area.key;
+      const rowClass = "trace-action-row";
       return `
-        <aside class="decision-drawer" aria-label="מקור ההחלטה" onclick="event.stopPropagation()">
-          <div class="decision-drawer-head">
-            <div>
-              <div class="decision-drawer-title">מקור ההחלטה · ${escapeHtml(area.label)}</div>
-              <div class="trace-muted">${escapeHtml(resultTrace.title)} · ${escapeHtml(resultTrace.resultId)}</div>
-            </div>
-            <button class="button ghost icon-only" type="button" onclick="closeDecisionSource()" aria-label="סגור מקור החלטה" title="סגור">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path fill="currentColor" d="M18.3 5.71 12 12l6.3 6.29-1.41 1.41L10.59 13.41 4.29 19.71 2.88 18.3 9.17 12 2.88 5.7 4.29 4.29l6.3 6.3 6.29-6.3z"/>
-              </svg>
-            </button>
-          </div>
-          <div class="decision-drawer-body">
-            <div class="trace-callout">
-              <span class="item-result-label">פעולת BFF:</span> ${escapeHtml(area.businessAction)}
-            </div>
-            ${renderTransformationTable(area.transformations)}
-            <details class="technical-details trace-json-details">
-              <summary>JSON שנבדק ונוצר</summary>
-              <div class="trace-json-grid">
-                <div>
-                  <div class="trace-json-title">AgentResponse - מקור ההחלטה</div>
-                  <pre class="json-box trace-json-box">${escapeHtml(JSON.stringify(area.sourceJson, null, 2))}</pre>
-                </div>
-                <div>
-                  <div class="trace-json-title">DisplayResponse - מה נוצר</div>
-                  <pre class="json-box trace-json-box">${escapeHtml(JSON.stringify(area.displayJson, null, 2))}</pre>
-                </div>
-              </div>
-            </details>
-          </div>
-        </aside>
+        <details class="trace-area-details" ${isDrawerSource ? "open" : ""} ontoggle="handleTraceAreaToggle(event, '${escapeJs(row.resultId)}', '${escapeJs(area.key)}')">
+          <summary class="${rowClass}" role="row">
+            <div class="trace-area-label" role="cell">${escapeHtml(area.label)}</div>
+            <div class="trace-outcome" role="cell">${escapeHtml(area.displayText)}</div>
+          </summary>
+          ${isDrawerSource ? renderInlineDecisionDrawer(row, area) : ""}
+        </details>
       `;
     }
 
-    function renderTransformationTable(rows) {
-      if (!asArray(rows).length) return `<div class="empty">לא נמצאו שדות מקור לפירוט ההחלטה.</div>`;
+    function renderInlineDecisionDrawer(row, area) {
       return `
-        <div class="transform-table" aria-label="פירוט פעולות BFF">
+        <div class="trace-inline-drawer" role="row">
+          <div class="trace-inline-drawer-inner" role="cell">
+            <div class="trace-inline-drawer-head">
+              <div>
+                <div class="trace-inline-title">פירוט · ${escapeHtml(area.label)}</div>
+                <div class="trace-muted">${escapeHtml(row.title)} · ${escapeHtml(row.resultId)}</div>
+              </div>
+            </div>
+            <div class="trace-inline-drawer-body">
+              ${renderDecisionDetails(area)}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderDecisionDetails(area) {
+      return `
+        ${renderActionList(area.actions)}
+        <div class="trace-json-section">
+          <div class="trace-json-grid">
+            <div>
+              <div class="trace-json-title">תגובת Agent (מקור)</div>
+              <pre class="json-box trace-json-box">${escapeHtml(JSON.stringify(area.sourceJson, null, 2))}</pre>
+            </div>
+            <div>
+              <div class="trace-json-title">ServiceGuideDisplayResponse (תוצאה)</div>
+              <pre class="json-box trace-json-box">${escapeHtml(JSON.stringify(area.displayJson, null, 2))}</pre>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderActionList(rows) {
+      if (!asArray(rows).length) return "";
+      return `
+        <div class="transform-table trace-actions-list" aria-label="פירוט פעולות">
           ${rows.map((row) => `
             <div class="transform-row">
-              <div class="transform-source trace-code">${escapeHtml(row.field)}</div>
-              <div class="transform-action">${escapeHtml(row.action)}</div>
-              <div class="transform-output"><span class="transform-output-label">נוצר:</span> ${escapeHtml(row.displayValue)}</div>
+              <div class="transform-action">${escapeHtml(row)}</div>
             </div>
           `).join("")}
         </div>
@@ -3628,13 +3552,15 @@
         return;
       }
       if (state.selectedStep === "displayResponse") {
-        els.workspaceBody.innerHTML = `${renderDisplaySummary()}${jsonPanel("displayResponse", currentStepData())}`;
+        els.workspaceBody.innerHTML = state.jsonVisible.displayResponse
+          ? jsonPanel("displayResponse", currentStepData())
+          : renderDisplaySummary();
         return;
       }
       if (state.selectedStep === "preview") {
         els.workspaceBody.innerHTML = renderExplanation([
           { label: "מה נכנס", text: "מוצגת הדמיה של מסך התוצאות ושל מסך פרטי הרופא." },
-          { label: "מה בוצע", text: "לחיצה על תוצאה משתמשת ב־navigation.targetId כדי לפתוח את הרשומה המתאימה מתוך providerDetailsById, וחזרה מחזירה לרשימת התוצאות." },
+          { label: "מה בוצע", text: "לחיצה על תוצאה פותחת את מסך פרטי הרופא התואם, וחזרה מחזירה לרשימת התוצאות." },
           { label: "מה יצא", text: "כך מסך התוצאות ומסך פרטי הרופא צפויים להיראות ב־UI." },
         ]);
         return;
@@ -3898,6 +3824,7 @@
       state.bffDecisionTrace = null;
       state.decisionDrawer = null;
       state.openTraceResultId = null;
+      state.lastClosedDecision = null;
       try { state.searchJson = value.trim() ? JSON.parse(value) : null; } catch (error) { state.searchJson = null; }
       render();
     };
@@ -3957,14 +3884,19 @@
       render();
     };
 
-    window.openDecisionSource = function(resultId, areaKey) {
+    window.handleTraceAreaToggle = function(event, resultId, areaKey) {
+      if (!event.target.open) {
+        if (state.decisionDrawer?.resultId === resultId && state.decisionDrawer?.areaKey === areaKey) {
+          state.decisionDrawer = null;
+          state.lastClosedDecision = null;
+          render();
+        }
+        return;
+      }
+      if (state.decisionDrawer?.resultId === resultId && state.decisionDrawer?.areaKey === areaKey) return;
       state.openTraceResultId = resultId;
       state.decisionDrawer = { resultId, areaKey };
-      render();
-    };
-
-    window.closeDecisionSource = function() {
-      state.decisionDrawer = null;
+      state.lastClosedDecision = null;
       render();
     };
 
@@ -4007,8 +3939,15 @@
     };
 
     window.downloadSimulation = function() {
+      const generatedAt = new Date().toISOString();
+      const requestId = state.flow.agentRequest?.requestId || state.flow.displayResponse?.metadata?.requestId || "no-request-id";
+      const safeRequestId = String(requestId).replace(/[^\w.-]+/g, "_").slice(0, 80);
+      const timestamp = generatedAt
+        .replace(/[-:]/g, "")
+        .replace(/\.\d{3}Z$/, "Z")
+        .replace("T", "-");
       const payload = {
-        generatedAt: new Date().toISOString(),
+        generatedAt,
         flow: state.flow,
         orchestratorSummary: state.orchestratorSummary,
         displaySummary: state.displaySummary,
@@ -4018,7 +3957,7 @@
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = "service-guide-slim-simulation.json";
+      link.download = `service-guide-simulation-${safeRequestId}-${timestamp}.json`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -4043,6 +3982,7 @@
       state.bffDecisionTrace = null;
       state.decisionDrawer = null;
       state.openTraceResultId = null;
+      state.lastClosedDecision = null;
       try { state.searchJson = JSON.parse(state.searchJsonText); } catch (error) { state.searchJson = null; }
       state.selectedStep = "searchResponse";
       state.previewPanelOpen = false;
