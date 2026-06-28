@@ -2338,12 +2338,22 @@
       return fromArray || String(hit.languageList || "").split(",").map((item) => item.trim()).filter(Boolean).join(", ");
     }
 
-    function subtitleLines(hit) {
+    function displayLine(type, label, text) {
+      return hasText(text) ? { type, text: `${label}: ${String(text).trim()}` } : null;
+    }
+
+    function collapsedSubtitleLines(hit) {
       return [
-        { type: "specialization", text: specializationText(hit) },
-        { type: "professionalization", text: professionalizationText(hit) },
-        { type: "languages", text: languagesText(hit) },
-      ].filter((line) => hasText(line.text));
+        displayLine("specialization", "מומחיות", specializationText(hit)),
+        displayLine("professionalization", "התמקצעות", professionalizationText(hit)),
+      ].filter(Boolean);
+    }
+
+    function headerSubtitleLines(hit) {
+      return [
+        ...collapsedSubtitleLines(hit),
+        displayLine("languages", "שפות", languagesText(hit)),
+      ].filter(Boolean);
     }
 
     function shabanChips(hit) {
@@ -2634,7 +2644,8 @@
       const title = firstText(hit.serviceProviderName, hit.serviceName) || "";
       if (!hasText(title)) return null;
       const avatar = avatarType(hit.serviceProviderGender);
-      const subtitles = subtitleLines(hit);
+      const collapsedSubtitles = collapsedSubtitleLines(hit);
+      const headerSubtitles = headerSubtitleLines(hit);
       const collapsedMessages = [...remark10Messages(hit), ...absenceMessages(hit)];
       const sections = {};
       const address = buildAddressSection(hit);
@@ -2653,7 +2664,7 @@
         title,
         avatarType: avatar,
       };
-      if (subtitles.length) collapsed.subtitleLines = subtitles;
+      if (collapsedSubtitles.length) collapsed.subtitleLines = collapsedSubtitles;
       const chips = collapsedChips(hit);
       if (chips.length) collapsed.chips = chips;
       if (collapsedMessages.length) collapsed.messages = collapsedMessages;
@@ -2662,7 +2673,7 @@
         title,
         avatarType: avatar,
       };
-      if (subtitles.length) header.subtitleLines = subtitles;
+      if (headerSubtitles.length) header.subtitleLines = headerSubtitles;
       const headerChips = shabanChips(hit);
       if (headerChips.length) header.chips = headerChips;
       const providerDetails = {
@@ -2703,15 +2714,16 @@
       return found ? `${found.label}="${hit[found.key]}"` : "לא נמצא מקור נתונים";
     }
 
-    function subtitleDecision(hit) {
+    function subtitleDecision(hit, includeLanguages = false) {
       const specialization = specializationText(hit);
       const professionalization = professionalizationText(hit);
       const languages = languagesText(hit);
-      return [
+      const rows = [
         `specialization: ${specialization || "הושמט כי אין מקור"}`,
         `professionalization: ${professionalization || "הושמט כי אין מקור"}`,
-        `languages: ${languages || "הושמט כי אין מקור"}`,
-      ].join(" | ");
+      ];
+      if (includeLanguages) rows.push(`languages: ${languages || "הושמט כי אין מקור"}`);
+      return rows.join(" | ");
     }
 
     function chipDecision(hit) {
@@ -2760,7 +2772,7 @@
         ? `header chips נבנו רק מתגיות שב״ן: ${chipText}`
         : `לא נבנו header chips כי shabanType=${hit?.shabanType ?? "null"} אינו יוצר תגית שב״ן`;
       const sectionNames = Object.keys(details.sections || {}).join(", ") || "לא נבנו אזורי תוכן להצגה";
-      return `providerDetailsById[${result.resultId}] נבנה עם header שמשתמש באותו title/avatar/subtitle של הכרטיס. ${chipsDecision}. sections נבנו רק עבור אזורים שבהם קיים תוכן להצגה: ${sectionNames}`;
+      return `providerDetailsById[${result.resultId}] נבנה עם header שמשתמש באותו title/avatar של הכרטיס, subtitleLines של מומחיות והתמקצעות כמו הכרטיס, ובתוספת שורת שפות אם יש מקור. subtitleLines ב-header: ${subtitleDecision(hit || {}, true)}. ${chipsDecision}. sections נבנו רק עבור אזורים שבהם קיים תוכן להצגה: ${sectionNames}`;
     }
 
     function absenceDecision(hit, result) {
@@ -2816,7 +2828,7 @@
               const hit = byId.get(result.resultId);
               const lines = asArray(result.collapsedCard.subtitleLines).map((line) => `${line.type}="${line.text}"`).join(", ") || "לא נמצאו נתונים";
               const messages = asArray(result.collapsedCard.messages).map((message) => `${message.type}="${message.text}"`).join(", ") || "לא נמצאו נתונים";
-              return detail(result.resultId, `subtitleLines: ${subtitleDecision(hit || {})}. בפועל: ${lines}. chips: ${chipDecision(hit || {})}. messages: remark10 והיעדרות נכנסים ל-collapsed messages אם יש טקסט; בפועל: ${messages}. locationText נלקח מ-cityName="${result.collapsedCard.locationText || "null"}"`);
+              return detail(result.resultId, `subtitleLines בכרטיס: ${subtitleDecision(hit || {})}. בפועל: ${lines}. chips: ${chipDecision(hit || {})}. messages: remark10 והיעדרות נכנסים ל-collapsed messages אם יש טקסט; בפועל: ${messages}. locationText נלקח מ-cityName="${result.collapsedCard.locationText || "null"}"`);
             }),
           },
           {
@@ -2947,8 +2959,7 @@
       const messageTypes = new Set(asArray(card.messages).map((message) => message.type));
       const components = ["שם נותן השירות"];
       if (subtitleTypes.has("specialization")) components.push("מומחיות");
-      if (subtitleTypes.has("professionalization")) components.push("התמחויות");
-      if (subtitleTypes.has("languages")) components.push("שפות");
+      if (subtitleTypes.has("professionalization")) components.push("התמקצעות");
       if (chipTypes.has("accessibility")) components.push("תגית נגישות");
       const shabanCount = asArray(card.chips).filter((chip) => String(chip.type || "").startsWith("shaban")).length;
       if (shabanCount) components.push(shabanCount === 1 ? "תגית שב״ן" : "תגיות שב״ן");
@@ -2963,12 +2974,9 @@
         actions.push("לא התקבלה מומחיות ברשימת specializationList, ולכן serviceNameDoc שימש כמומחיות.");
       }
       if (!asArray(hit.treatAreaList).some((item) => hasText(item.treatArea)) && hasText(hit.treatAreaString) && subtitleTypes.has("professionalization")) {
-        actions.push("לא התקבלה רשימת התמחויות ב־treatAreaList, ולכן treatAreaString שימש כהתמחויות.");
+        actions.push("לא התקבלה רשימת התמקצעות ב־treatAreaList, ולכן treatAreaString שימש כהתמקצעות.");
       } else if (!asArray(hit.treatAreaList).some((item) => hasText(item.treatArea)) && !hasText(hit.treatAreaString) && asArray(hit.profArea).some((item) => hasText(item.professAreaDesc)) && subtitleTypes.has("professionalization")) {
-        actions.push("לא התקבלו התמחויות ב־treatAreaList או ב־treatAreaString, ולכן profArea שימש כהתמחויות.");
-      }
-      if (!asArray(hit.languages).some((item) => hasText(item.language)) && hasText(hit.languageList) && subtitleTypes.has("languages")) {
-        actions.push("לא התקבלה רשימת שפות מובנית, ולכן languageList פוצל לרשימת שפות לתצוגה.");
+        actions.push("לא התקבלה התמקצעות ב־treatAreaList או ב־treatAreaString, ולכן profArea שימש כהתמקצעות.");
       }
       return traceArea(
         "card",
