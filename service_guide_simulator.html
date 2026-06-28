@@ -209,10 +209,71 @@
       justify-content: start;
     }
 
+    .mode-chip {
+      min-height: 28px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 0;
+      font-size: 11px;
+      font-weight: 400;
+      white-space: nowrap;
+    }
+
+    .mode-chip-select {
+      width: auto;
+      min-height: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: var(--primary);
+      padding: 0 2px;
+      font-size: 11px;
+      font-weight: 400;
+      outline: 0;
+      box-shadow: none;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    .mode-chip-select option {
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    .mode-chip-select:focus,
+    .mode-chip-select:focus-visible {
+      border: 0;
+      outline: 0;
+      box-shadow: none;
+    }
+
     .field {
       display: grid;
       gap: 6px;
       min-width: 0;
+    }
+
+    .field[hidden] {
+      display: none;
+    }
+
+    #uploadButton {
+      width: 190px;
+    }
+
+    #runButton,
+    #resetButton {
+      width: 96px;
+    }
+
+    .controls.agent-mode {
+      grid-template-columns: 190px 96px 96px;
     }
 
     label {
@@ -406,6 +467,14 @@
       box-shadow: none;
     }
 
+    .step.disabled {
+      background: var(--surface-2);
+      color: var(--muted);
+      cursor: not-allowed;
+      opacity: 0.68;
+      box-shadow: none;
+    }
+
     .step-name {
       font-size: 12px;
       font-weight: 600;
@@ -435,6 +504,7 @@
     .step-state.waiting::before { background: var(--muted); }
     .step-state.needs-input::before { background: var(--warn); }
     .step-state.error::before { background: var(--err); }
+    .step-state.disabled::before { background: var(--muted); }
 
     .workspace {
       display: grid;
@@ -1397,6 +1467,13 @@
             <p class="subtitle">סימולטור זרימת הנתונים</p>
           </div>
           <div class="header-actions">
+            <label class="mode-chip" for="inputModeSelect">
+              <span>מצב:</span>
+              <select class="mode-chip-select" id="inputModeSelect" aria-label="מצב סימולציה">
+                <option value="full" selected>תהליך מלא</option>
+                <option value="agent">התחל מתגובת Agent</option>
+              </select>
+            </label>
             <div class="status-strip header-status" id="runStatus"></div>
             <button class="header-toggle" type="button" id="headerToggleButton" aria-label="כיווץ אזור החיפוש" title="כיווץ אזור החיפוש">
               <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
@@ -1465,6 +1542,7 @@
     const INITIATOR_CODE = "001";
     const MAX_UPLOAD_BYTES = 1000 * 1024;
     const BFF_RULESET_VERSION = "v1";
+    const AGENT_DISABLED_STEPS = new Set(["ui", "agentRequest", "searchResponse", "orchestrator"]);
 
     const steps = [
       { id: "ui", name: "בקשת חיפוש UI", sub: "ServiceGuideSearchRequest" },
@@ -1477,10 +1555,14 @@
     ];
 
     const state = {
+      inputMode: "full",
       selectedStep: "ui",
-      fileName: "",
+      searchFileName: "",
+      agentFileName: "",
       searchJsonText: "",
       searchJson: null,
+      agentJsonText: "",
+      agentResponseJson: null,
       flow: {},
       orchestratorSummary: null,
       displaySummary: null,
@@ -1501,6 +1583,7 @@
       headerPanel: document.getElementById("headerPanel"),
       headerToggleButton: document.getElementById("headerToggleButton"),
       workspaceScroll: document.getElementById("workspaceScroll"),
+      inputModeSelect: document.getElementById("inputModeSelect"),
       searchText: document.getElementById("searchText"),
       environment: document.getElementById("environment"),
       uploadButton: document.getElementById("uploadButton"),
@@ -1567,6 +1650,73 @@
 
     function includeRawSource() {
       return els.environment.value === "true";
+    }
+
+    function isAgentMode() {
+      return state.inputMode === "agent";
+    }
+
+    function isStepDisabled(stepId) {
+      return isAgentMode() && AGENT_DISABLED_STEPS.has(stepId);
+    }
+
+    function resetRunState() {
+      state.flow = {};
+      state.orchestratorSummary = null;
+      state.displaySummary = null;
+      state.bffDecisionTrace = null;
+      state.decisionDrawer = null;
+      state.openTraceResultId = null;
+      state.lastClosedDecision = null;
+      state.errors = [];
+      state.selectedProviderId = null;
+      state.visibleCount = 10;
+      state.jsonVisible = {};
+      state.previewPanelOpen = false;
+      state.explanationOpen = false;
+      state.headerCollapsed = false;
+    }
+
+    function resetFullInput() {
+      state.searchFileName = "";
+      state.searchJsonText = "";
+      state.searchJson = null;
+      els.searchText.value = "";
+      els.environment.value = "false";
+    }
+
+    function resetAgentInput() {
+      state.agentFileName = "";
+      state.agentJsonText = "";
+      state.agentResponseJson = null;
+    }
+
+    function resetForMode(mode, selectedStep) {
+      resetRunState();
+      if (mode === "full") {
+        resetFullInput();
+        resetAgentInput();
+      } else {
+        resetFullInput();
+        resetAgentInput();
+      }
+      state.selectedStep = selectedStep;
+      els.jsonFile.value = "";
+    }
+
+    function validateAgentResponse(agentResponse) {
+      if (!agentResponse || typeof agentResponse !== "object" || Array.isArray(agentResponse)) {
+        return "תגובת Agent חייבת להיות אובייקט JSON";
+      }
+      if (!hasText(agentResponse.requestId)) return "מבנה תגובת Agent חייב לכלול requestId";
+      if (!Array.isArray(agentResponse.hits)) return "מבנה תגובת Agent חסר hits[]";
+      return "";
+    }
+
+    function parseAgentResponseText(value) {
+      const parsed = value.trim() ? JSON.parse(value) : null;
+      const validationError = validateAgentResponse(parsed);
+      return { parsed, validationError };
     }
 
     function sourceFromHit(hit) {
@@ -1859,6 +2009,14 @@
       }));
     }
 
+    function coverageCodeFromTreat(item) {
+      if (hasText(item.coverage_code)) return item.coverage_code;
+      if (hasText(item.coverageCode)) return item.coverageCode;
+      if (item.treat_is_personal === true) return "COMPLEMENTARY";
+      if (item.treat_is_personal === false) return "BASKET";
+      return null;
+    }
+
     function mapServTreats(source) {
       return asArray(source.serv_treats).map((item) => ({
         cptCode: item.cpt_code ?? null,
@@ -1868,7 +2026,7 @@
         hebrewServiceName: item.hebrew_service_name ?? null,
         cptPubtName: item.cpt_pubt_name ?? null,
         cptPubt: item.cpt_pubt ?? null,
-        coverageCode: item.coverage_code ?? item.coverageCode ?? null,
+        coverageCode: coverageCodeFromTreat(item),
       }));
     }
 
@@ -1910,6 +2068,13 @@
         treatAreaString: item.treat_area_string ?? null,
         serviceObjid: item.service_objid ?? null,
       }));
+    }
+
+    function membershipStatusCodeFromSource(source) {
+      if (hasText(source.membership_status_code)) return source.membership_status_code;
+      if (hasText(source.membershipStatusCode)) return source.membershipStatusCode;
+      if (source.limited_memb_icon === true) return "LIMITED";
+      return null;
     }
 
     function mapAgentHit(rawHit, source, sourceRank, rank, agentRequest) {
@@ -1956,7 +2121,7 @@
         shabanType: source.shaban_type ?? null,
         shabanInd: source.shaban_ind ?? null,
         mlhInd: source.mlh_ind ?? null,
-        membershipStatusCode: source.membership_status_code ?? source.membershipStatusCode ?? null,
+        membershipStatusCode: membershipStatusCodeFromSource(source),
         homeClinicIcon: source.home_clinic_icon ?? null,
         sharedClinicIcon: source.shared_clinic_icon ?? null,
         absenceIcon: source.absence_icon ?? null,
@@ -3097,6 +3262,14 @@
     }
 
     function runFlow() {
+      if (isAgentMode()) {
+        runFromAgentResponse();
+        return;
+      }
+      runFullFlow();
+    }
+
+    function runFullFlow() {
       state.errors = [];
       state.selectedProviderId = null;
       state.visibleCount = 10;
@@ -3147,27 +3320,56 @@
       render();
     }
 
-    function resetFlow() {
-      state.fileName = "";
-      state.searchJsonText = "";
-      state.searchJson = null;
-      state.flow = {};
+    function runFromAgentResponse() {
+      state.errors = [];
+      state.selectedProviderId = null;
+      state.visibleCount = 10;
       state.orchestratorSummary = null;
       state.displaySummary = null;
       state.bffDecisionTrace = null;
       state.decisionDrawer = null;
       state.openTraceResultId = null;
       state.lastClosedDecision = null;
-      state.errors = [];
-      state.selectedProviderId = null;
-      state.visibleCount = 10;
       state.jsonVisible = {};
-      state.previewPanelOpen = false;
       state.explanationOpen = false;
-      state.headerCollapsed = false;
-      state.selectedStep = "ui";
-      els.searchText.value = "";
-      els.environment.value = "false";
+      if (!state.agentJsonText.trim()) state.errors.push("יש להעלות או להדביק תגובת Agent");
+      let parsedAgentResponse = null;
+      try {
+        const result = parseAgentResponseText(state.agentJsonText);
+        parsedAgentResponse = result.parsed;
+        if (state.agentJsonText.trim() && result.validationError) state.errors.push(result.validationError);
+      } catch (error) {
+        state.errors.push(`JSON תגובת Agent לא תקין: ${error.message}`);
+      }
+      if (!state.errors.length) {
+        state.agentResponseJson = parsedAgentResponse;
+        const displayResponse = buildDisplayResponse(parsedAgentResponse);
+        state.flow = {
+          agentResponse: parsedAgentResponse,
+          displayResponse,
+        };
+        state.selectedStep = "preview";
+        state.headerCollapsed = true;
+      } else {
+        state.flow = {};
+        state.agentResponseJson = parsedAgentResponse;
+        state.orchestratorSummary = null;
+        state.displaySummary = null;
+        state.selectedStep = "agentResponse";
+        state.headerCollapsed = false;
+      }
+      render();
+    }
+
+    function resetFlow() {
+      resetRunState();
+      if (isAgentMode()) {
+        resetAgentInput();
+        state.selectedStep = "agentResponse";
+      } else {
+        resetFullInput();
+        state.selectedStep = "searchResponse";
+      }
       els.jsonFile.value = "";
       render();
     }
@@ -3184,9 +3386,11 @@
           <span class="run-state-meta">${escapeHtml(meta)}</span>
         </div>
       `;
-      els.fileNamePill.textContent = state.fileName || "לא הועלה פלט מנוע חיפוש";
-      els.rawSourcePill.hidden = !includeRawSource();
-      els.rawSourcePill.textContent = includeRawSource() ? "Test / QA כולל rawSource" : "";
+      els.fileNamePill.textContent = isAgentMode()
+        ? (state.agentFileName || "לא הועלתה תגובת Agent")
+        : (state.searchFileName || "לא הועלה פלט מנוע חיפוש");
+      els.rawSourcePill.hidden = isAgentMode() || !includeRawSource();
+      els.rawSourcePill.textContent = !isAgentMode() && includeRawSource() ? "Test / QA כולל rawSource" : "";
     }
 
     function renderHeaderCollapse() {
@@ -3207,7 +3411,20 @@
       els.headerErrors.innerHTML = state.errors.map((error) => `<div class="error-item">${escapeHtml(error)}</div>`).join("");
     }
 
+    function renderInputModeControls() {
+      els.inputModeSelect.value = state.inputMode;
+      els.uploadButton.closest(".controls").classList.toggle("agent-mode", isAgentMode());
+      els.searchText.closest(".field").hidden = isAgentMode();
+      els.environment.closest(".field").hidden = isAgentMode();
+      els.searchText.closest(".field").setAttribute("aria-hidden", String(isAgentMode()));
+      els.environment.closest(".field").setAttribute("aria-hidden", String(isAgentMode()));
+      els.searchText.disabled = isAgentMode();
+      els.environment.disabled = isAgentMode();
+      els.uploadButton.textContent = isAgentMode() ? "העלאת תגובת Agent" : "העלאת פלט מנוע חיפוש";
+    }
+
     function stepStatus(id) {
+      if (isStepDisabled(id)) return { text: "לא רלוונטי", state: "disabled" };
       if (id === "ui") return state.flow.ui ? { text: "נבנה", state: "done" } : { text: "ממתין להפעלה", state: "waiting" };
       if (id === "agentRequest") return state.flow.agentRequest ? { text: "נבנה", state: "done" } : { text: "ממתין להפעלה", state: "waiting" };
       if (id === "searchResponse") {
@@ -3223,17 +3440,18 @@
     }
 
     function renderStepper() {
-      els.stepper.innerHTML = steps.map((step) => `
-        <button class="step ${state.selectedStep === step.id ? "active" : ""}" type="button" onclick="setStep('${step.id}')">
+      els.stepper.innerHTML = steps.map((step) => {
+        const disabled = isStepDisabled(step.id);
+        const status = stepStatus(step.id);
+        return `
+        <button class="step ${state.selectedStep === step.id ? "active" : ""} ${disabled ? "disabled" : ""}" type="button" onclick="setStep('${step.id}')" ${disabled ? "disabled aria-disabled=\"true\"" : ""}>
           <div>
             <div class="step-name">${escapeHtml(step.name)}</div>
           </div>
-          ${(() => {
-            const status = stepStatus(step.id);
-            return `<span class="step-state ${escapeHtml(status.state)}">${escapeHtml(status.text)}</span>`;
-          })()}
+          <span class="step-state ${escapeHtml(status.state)}">${escapeHtml(status.text)}</span>
         </button>
-      `).join("");
+      `;
+      }).join("");
     }
 
     function renderJsonActions(target) {
@@ -3276,6 +3494,15 @@
         <div class="field">
           <label for="searchJsonInput">פלט מנוע חיפוש</label>
           <textarea id="searchJsonInput" oninput="updateSearchJsonText(this.value)" placeholder="{}">${escapeHtml(state.searchJsonText)}</textarea>
+        </div>
+      `;
+    }
+
+    function renderAgentInput() {
+      return `
+        <div class="field">
+          <label for="agentJsonInput">תגובת Agent</label>
+          <textarea id="agentJsonInput" oninput="updateAgentJsonText(this.value)" placeholder="{}">${escapeHtml(state.agentJsonText)}</textarea>
         </div>
       `;
     }
@@ -3323,6 +3550,24 @@
         { label: "מה נכנס", text: "פלט מנוע החיפוש נטען" },
         { label: "מה בוצע", text: "נבדק שהנתיב data.service_guide.hits קיים ושהוא מערך" },
         { label: "מה יצא", text: `נמצאו ${hits} תוצאות מקור` },
+      ]);
+    }
+
+    function renderAgentResponseInputStatus() {
+      if (!state.agentJsonText.trim()) {
+        return renderExplanation([
+          { label: "מה נכנס", text: "טרם הוזנה תגובת Agent" },
+          { label: "מה בוצע", text: "ניתן להעלות קובץ או להדביק JSON של תגובת Agent" },
+          { label: "מה יצא", text: "ההרצה תמשיך רק לאחר טעינת JSON תקין הכולל requestId ו־hits[]" },
+        ]);
+      }
+      if (!state.agentResponseJson) return `<div class="empty">JSON תגובת Agent לא תקין</div>`;
+      const validationError = validateAgentResponse(state.agentResponseJson);
+      if (validationError) return `<div class="empty">${escapeHtml(validationError)}</div>`;
+      return renderExplanation([
+        { label: "מה נכנס", text: "תגובת Agent נטענה" },
+        { label: "מה בוצע", text: "נבדק שהמבנה כולל requestId ו־hits[]" },
+        { label: "מה יצא", text: `נמצאו ${state.agentResponseJson.hits.length} תוצאות Agent` },
       ]);
     }
 
@@ -3559,11 +3804,16 @@
       els.workspaceSubtitle.toggleAttribute("aria-hidden", !step.sub);
       const isPreviewStep = state.selectedStep === "preview";
       els.workspaceShell.className = `workspace ${isPreviewStep ? (state.explanationOpen ? "explanation-visible" : "preview-full") : (state.previewPanelOpen ? "" : "preview-hidden")}`.trim();
-      const showJsonToggle = ["ui", "agentRequest", "agentResponse", "displayResponse"].includes(state.selectedStep);
+      const showJsonToggle = ["ui", "agentRequest", "agentResponse", "displayResponse"].includes(state.selectedStep)
+        && !(isAgentMode() && state.selectedStep === "agentResponse");
       els.workspaceActions.innerHTML = isPreviewStep
         ? ""
         : `${previewToggleButton()}${showJsonToggle ? renderJsonActions(state.selectedStep) : ""}`;
       els.previewActions.innerHTML = isPreviewStep ? explanationToggleButton() : "";
+      if (isAgentMode() && state.selectedStep === "agentResponse") {
+        els.workspaceBody.innerHTML = `${renderAgentInput()}${renderAgentResponseInputStatus()}`;
+        return;
+      }
       if (state.selectedStep === "searchResponse") {
         els.workspaceBody.innerHTML = `${renderSearchInput()}${renderSearchResponseStatus()}`;
         return;
@@ -3579,11 +3829,17 @@
         return;
       }
       if (state.selectedStep === "preview") {
-        els.workspaceBody.innerHTML = renderExplanation([
-          { label: "מה נכנס", text: "מוצגת הדמיה של מסך התוצאות ושל מסך פרטי הרופא." },
-          { label: "מה בוצע", text: "לחיצה על תוצאה פותחת את מסך פרטי הרופא התואם, וחזרה מחזירה לרשימת התוצאות." },
-          { label: "מה יצא", text: "כך מסך התוצאות ומסך פרטי הרופא צפויים להיראות ב־UI." },
-        ]);
+        els.workspaceBody.innerHTML = isAgentMode()
+          ? renderExplanation([
+            { label: "מה נכנס", text: "נטענה תגובת Agent" },
+            { label: "מה בוצע", text: "הופעל שלב BFF שבונה את תגובת התצוגה מתוך תגובת ה־Agent" },
+            { label: "מה יצא", text: "נוצרה תגובת BFF ל־UI ותצוגה מקדימה" },
+          ])
+          : renderExplanation([
+            { label: "מה נכנס", text: "מוצגת הדמיה של מסך התוצאות ושל מסך פרטי הרופא." },
+            { label: "מה בוצע", text: "לחיצה על תוצאה משתמשת ב־navigation.targetId כדי לפתוח את הרשומה המתאימה מתוך providerDetailsById, וחזרה מחזירה לרשימת התוצאות." },
+            { label: "מה יצא", text: "כך מסך התוצאות ומסך פרטי הרופא צפויים להיראות ב־UI." },
+          ]);
         return;
       }
       els.workspaceBody.innerHTML = `${renderStepIntro(state.selectedStep)}${jsonPanel(state.selectedStep, currentStepData())}`;
@@ -3819,6 +4075,7 @@
     function render() {
       const scrollState = captureScrollState();
       renderHeaderCollapse();
+      renderInputModeControls();
       renderRunStatus();
       renderHeaderErrors();
       renderStepper();
@@ -3831,14 +4088,22 @@
     window.addEventListener("resize", updateDecisionDrawerFrame);
 
     window.setStep = function(id) {
+      if (isStepDisabled(id)) return;
       state.selectedStep = id;
       state.explanationOpen = false;
       render();
     };
 
+    window.setInputMode = function(mode) {
+      if (!["full", "agent"].includes(mode) || state.inputMode === mode) return;
+      state.inputMode = mode;
+      resetForMode(mode, mode === "agent" ? "agentResponse" : "searchResponse");
+      render();
+    };
+
     window.updateSearchJsonText = function(value) {
       state.searchJsonText = value;
-      state.fileName = "";
+      state.searchFileName = "";
       state.flow = {};
       state.orchestratorSummary = null;
       state.displaySummary = null;
@@ -3846,7 +4111,32 @@
       state.decisionDrawer = null;
       state.openTraceResultId = null;
       state.lastClosedDecision = null;
+      state.selectedProviderId = null;
+      state.visibleCount = 10;
+      state.jsonVisible = {};
+      state.previewPanelOpen = false;
+      state.explanationOpen = false;
       try { state.searchJson = value.trim() ? JSON.parse(value) : null; } catch (error) { state.searchJson = null; }
+      render();
+    };
+
+    window.updateAgentJsonText = function(value) {
+      state.agentJsonText = value;
+      state.agentFileName = "";
+      state.flow = {};
+      state.orchestratorSummary = null;
+      state.displaySummary = null;
+      state.selectedProviderId = null;
+      state.visibleCount = 10;
+      state.jsonVisible = {};
+      state.previewPanelOpen = false;
+      state.explanationOpen = false;
+      try {
+        const result = parseAgentResponseText(value);
+        state.agentResponseJson = result.parsed;
+      } catch (error) {
+        state.agentResponseJson = null;
+      }
       render();
     };
 
@@ -3967,13 +4257,25 @@
         .replace(/[-:]/g, "")
         .replace(/\.\d{3}Z$/, "Z")
         .replace("T", "-");
-      const payload = {
-        generatedAt,
-        flow: state.flow,
-        orchestratorSummary: state.orchestratorSummary,
-        displaySummary: state.displaySummary,
-        bffDecisionTrace: state.bffDecisionTrace,
-      };
+      const payload = isAgentMode()
+        ? {
+          generatedAt,
+          inputMode: state.inputMode,
+          flow: {
+            agentResponse: state.flow.agentResponse,
+            displayResponse: state.flow.displayResponse,
+          },
+          displaySummary: state.displaySummary,
+          bffDecisionTrace: state.bffDecisionTrace,
+        }
+        : {
+          generatedAt,
+          inputMode: state.inputMode,
+          flow: state.flow,
+          orchestratorSummary: state.orchestratorSummary,
+          displaySummary: state.displaySummary,
+          bffDecisionTrace: state.bffDecisionTrace,
+        };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -3995,8 +4297,7 @@
         render();
         return;
       }
-      state.searchJsonText = await file.text();
-      state.fileName = file.name;
+      const fileText = await file.text();
       state.flow = {};
       state.orchestratorSummary = null;
       state.displaySummary = null;
@@ -4004,8 +4305,26 @@
       state.decisionDrawer = null;
       state.openTraceResultId = null;
       state.lastClosedDecision = null;
-      try { state.searchJson = JSON.parse(state.searchJsonText); } catch (error) { state.searchJson = null; }
-      state.selectedStep = "searchResponse";
+      state.selectedProviderId = null;
+      state.visibleCount = 10;
+      state.jsonVisible = {};
+      state.errors = [];
+      if (isAgentMode()) {
+        state.agentJsonText = fileText;
+        state.agentFileName = file.name;
+        try {
+          const result = parseAgentResponseText(state.agentJsonText);
+          state.agentResponseJson = result.parsed;
+        } catch (error) {
+          state.agentResponseJson = null;
+        }
+        state.selectedStep = "agentResponse";
+      } else {
+        state.searchJsonText = fileText;
+        state.searchFileName = file.name;
+        try { state.searchJson = JSON.parse(state.searchJsonText); } catch (error) { state.searchJson = null; }
+        state.selectedStep = "searchResponse";
+      }
       state.previewPanelOpen = false;
       state.headerCollapsed = false;
       render();
@@ -4013,6 +4332,7 @@
     els.runButton.addEventListener("click", runFlow);
     els.resetButton.addEventListener("click", resetFlow);
     els.headerToggleButton.addEventListener("click", window.toggleHeaderCollapse);
+    els.inputModeSelect.addEventListener("change", () => window.setInputMode(els.inputModeSelect.value));
     els.searchText.addEventListener("input", () => {});
     els.environment.addEventListener("change", renderRunStatus);
 
