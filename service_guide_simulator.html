@@ -2741,10 +2741,38 @@
       return `${item.type}:${item.text}`;
     }
 
+    function contactTraceLabel(item) {
+      return item.label === "זימון תורים" ? `מסוג ${item.label}` : item.label;
+    }
+
     function serviceItemCountText(count) {
       if (count === 1) return "טיפול אחד";
       if (count === 2) return "2 טיפולים";
       return `${count} טיפולים`;
+    }
+
+    function traceServicesDisplayText(groups) {
+      const displayItems = groups.reduce((sum, group) => sum + asArray(group.items).length, 0);
+      const groupCount = groups.length;
+      const fallbackGroup = groups.find((group) => group.title === "טיפולים נוספים");
+      const fallbackCount = fallbackGroup ? asArray(fallbackGroup.items).length : 0;
+      const namedGroupCount = Math.max(0, groupCount - (fallbackGroup ? 1 : 0));
+      const coverageCounts = groups.flatMap((group) => asArray(group.items)).reduce((acc, item) => {
+        if (!hasText(item.coverageText)) return acc;
+        acc[item.coverageText] = (acc[item.coverageText] || 0) + 1;
+        return acc;
+      }, {});
+      const parts = [
+        `${serviceItemCountText(displayItems)} מוצגים`,
+        groupCount ? `${countLabel(groupCount, "קבוצה אחת", "קבוצות")} בתצוגה` : "",
+        namedGroupCount ? `${countLabel(namedGroupCount, "קבוצת טיפול מוגדרת אחת", "קבוצות טיפול מוגדרות")}` : "",
+        fallbackCount ? `${serviceItemCountText(fallbackCount)} תחת "טיפולים נוספים"` : "",
+      ].filter(Boolean);
+      const coverageParts = Object.entries(coverageCounts)
+        .sort(([a], [b]) => a.localeCompare(b, "he"))
+        .map(([label, count]) => `${count} ${label}`);
+      if (coverageParts.length) parts.push(`כיסוי: ${hebrewJoin(coverageParts)}`);
+      return `${hebrewJoin(parts)}.`;
     }
 
     function traceCard(hit, result, details) {
@@ -2885,7 +2913,7 @@
       return traceArea(
         "contacts",
         "אמצעי קשר",
-        displayListText(displayItems.map((item) => item.label)),
+        displayListText(displayItems.map(contactTraceLabel)),
         actions,
         { contacts: hit.contacts },
         section
@@ -2979,19 +3007,12 @@
       if (cleanedCodeCount) actions.push(`${cleanedCodeCount} שמות טיפול עברו ניקוי של קוד טיפול שהופיע בתוך הטקסט.`);
       const fallbackGroup = groups.find((group) => group.title === "טיפולים נוספים");
       if (fallbackGroup) {
-        actions.push("טיפולים ללא קבוצת טיפול קובצו תחת \"טיפולים נוספים\", והקבוצה נשלחה אחרונה ברשימת הקבוצות.");
+        actions.push("עבור קבוצת טיפולים שלא חזר לה שם קבוצה מהמקור, ניתן השם \"טיפולים נוספים\" והיא מוצגת אחרונה בסדר לאחר הקבוצות שחזרו עם שם.");
       }
-      const displayItems = groups.reduce((sum, group) => sum + asArray(group.items).length, 0);
-      const groupParts = groups.map((group) => {
-        const count = asArray(group.items).length;
-        return group.title === "טיפולים נוספים"
-          ? `${serviceItemCountText(count)} תחת "טיפולים נוספים"`
-          : `${serviceItemCountText(count)} בקבוצת "${group.title}"`;
-      });
       return traceArea(
         "services",
         "ניתוחים וטיפולים",
-        `${displayItems} ${displayItems === 1 ? "טיפול" : "טיפולים"}: ${hebrewJoin(groupParts)}.`,
+        traceServicesDisplayText(groups),
         actions,
         { servTreats: hit.servTreats },
         section
