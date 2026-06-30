@@ -1252,6 +1252,7 @@
       padding: 8px 10px;
       font-size: 13px;
       line-height: 1.5;
+      white-space: pre-line;
     }
 
     .expanded {
@@ -1606,11 +1607,15 @@
 
     const contactMap = {
       "01": { type: "phone", label: "טלפון", order: 1, actionType: "copy" },
-      "02": { type: "appointments", label: "זימון תורים", order: 2, actionType: "copy" },
+      "02": { type: "appointments", label: "טלפון זימון תורים", order: 2, actionType: "copy" },
       "03": { type: "fax", label: "פקס", order: 3 },
-      "04": { type: "mobile", label: "נייד", order: 4, actionType: "copy" },
-      "05": { type: "email", label: "דוא״ל", order: 5, actionType: "mailto" },
+      "04": { type: "mobile", label: "טלפון נייד", order: 4, actionType: "copy" },
+      "05": { type: "email", label: "כתובת מייל", order: 5, actionType: "mailto" },
     };
+
+    const EMAIL_DISCLAIMER_TEXT = `כתובת המייל מיועדת רק להעברת טפסים ומסמכים.
+לא ניתן לקבל אבחון או ייעוץ רפואי באמצעות המייל.
+השימוש במייל כרוך בסיכון לדליפת מידע ופגיעה בפרטיות שלך. אם בחרת להעביר מידע באמצעות המייל, מכבי לא תישא באחריות בנושא זה.`;
 
     const scheduleMap = {
       1: { type: "reception", title: "שעות פעילות הרופא", order: 1 },
@@ -2206,11 +2211,6 @@
         acc[key] = (acc[key] || 0) + 1;
         return acc;
       }, {});
-      const coverageCounts = hits.flatMap((hit) => hit.servTreats).reduce((acc, item) => {
-        const key = item.coverageCode || "null";
-        acc[key] = (acc[key] || 0) + 1;
-        return acc;
-      }, {});
       const selectedAbsencesCount = hits.reduce((sum, hit) => sum + hit.absences.length, 0);
       const absenceAnalyses = matched.map((entry) => ({ entry, analysis: absenceAnalysis(entry.source), hit: hits.find((item) => item.sourceRank === entry.sourceRank) }));
       const sourceAbsencesCount = absenceAnalyses.reduce((sum, item) => sum + item.analysis.sourceCount, 0);
@@ -2265,11 +2265,6 @@
           title: "קביעת סטטוס קבלת חברים",
           value: formatCountMap(membershipCounts),
           details: hits.map((hit) => `${hit.resultId}: membershipStatusCode → ${hit.membershipStatusCode || "null"}`),
-        },
-        {
-          title: "קביעת סוג כיסוי",
-          value: formatCountMap(coverageCounts),
-          details: hits.flatMap((hit) => hit.servTreats.map((item, index) => `${hit.resultId} טיפול ${index + 1}: coverageCode → ${item.coverageCode || "null"}`)),
         },
         {
           title: "בחירת הערה להצגה",
@@ -2406,7 +2401,7 @@
       if (hit.accessibilityBool === true) messages.push({ type: "accessibility", text: hit.accessibility || "נגיש" });
       remark10Messages(hit).forEach((message) => messages.push(message));
       if (!hasText(hit.cityName) && !messages.length) return null;
-      const section = { title: "כתובת" };
+      const section = { title: "כתובת המרפאה" };
       if (hasText(hit.cityName)) section.city = hit.cityName;
       if (messages.length) section.messages = messages;
       return section;
@@ -2447,9 +2442,9 @@
         return item;
       }).filter(Boolean).sort((a, b) => a.order - b.order).map(({ order, ...item }) => item);
       if (!items.length) return null;
-      const section = { title: "אמצעי קשר", items };
+      const section = { title: "יצירת קשר עם המרפאה", items };
       if (items.some((item) => item.type === "email")) {
-        section.messages = [{ type: "emailDisclaimer", text: "לורם איפסום דולור סיט אמט, קונסקטורר אדיפיסינג אלית. סד אאוסמוד טמפור אינסידידונט אוט לבורה אה דולורה מגנה אליקווה." }];
+        section.messages = [{ type: "emailDisclaimer", text: EMAIL_DISCLAIMER_TEXT }];
       }
       return section;
     }
@@ -2610,7 +2605,6 @@
           groupTitle: hasGroupTitle ? row.cptPubtName : "טיפולים נוספים",
           groupTitleMissing: !hasGroupTitle,
           text: hasText(text) ? cleanServiceText(text, code) : String(code || ""),
-          coverageText: row.coverageCode === "COMPLEMENTARY" ? "משלים" : "בסל",
         };
       }).filter(Boolean);
       if (!items.length) return null;
@@ -2628,7 +2622,7 @@
       const groups = Object.values(groupsMap)
         .sort((a, b) => Number(a.titleMissing) - Number(b.titleMissing))
         .map(({ titleMissing, ...group }) => group);
-      return { title: "ניתוחים וטיפולים", groups };
+      return { title: "טיפולים, בדיקות וניתוחים", groups };
     }
 
     function buildAbsencesSection(hit) {
@@ -2637,7 +2631,7 @@
         if (hasText(absence.absenceReason)) item.reason = absence.absenceReason;
         return item;
       }).filter((item) => hasText(item.text));
-      return items.length ? { title: "היעדרויות וממלאי מקום", items } : null;
+      return items.length ? { title: "היעדרויות ומילוי מקום", items } : null;
     }
 
     function buildDisplayResult(hit) {
@@ -2840,7 +2834,7 @@
             }),
           },
           {
-            title: "בניית אמצעי קשר",
+            title: "בניית אזור יצירת קשר עם המרפאה",
             value: `${displayContacts} פריטי קשר לתצוגה מתוך ${sourceContacts} רשומות Agent`,
             details: results.map((result) => {
               const hit = byId.get(result.resultId);
@@ -2856,7 +2850,7 @@
             }),
           },
           {
-            title: "בניית ניתוחים וטיפולים",
+            title: "בניית אזור טיפולים, בדיקות וניתוחים",
             value: `${displayServiceItems} פריטי טיפול לתצוגה מתוך ${sourceTreats} רשומות Agent`,
             details: results.map((result) => {
               const hit = byId.get(result.resultId);
@@ -2864,7 +2858,7 @@
             }),
           },
           {
-            title: "בניית היעדרויות וממלאי מקום",
+            title: "בניית אזור היעדרויות ומילוי מקום",
             value: `${displayAbsences} פריטי היעדרות לתצוגה מתוך ${sourceAbsences} היעדרויות Agent`,
             details: results.map((result) => {
               const hit = byId.get(result.resultId);
@@ -2919,7 +2913,7 @@
     }
 
     function contactTraceLabel(item) {
-      return item.label === "זימון תורים" ? `מסוג ${item.label}` : item.label;
+      return item.label === "טלפון זימון תורים" ? `מסוג ${item.label}` : item.label;
     }
 
     function serviceItemCountText(count) {
@@ -2934,21 +2928,12 @@
       const fallbackGroup = groups.find((group) => group.title === "טיפולים נוספים");
       const fallbackCount = fallbackGroup ? asArray(fallbackGroup.items).length : 0;
       const namedGroupCount = Math.max(0, groupCount - (fallbackGroup ? 1 : 0));
-      const coverageCounts = groups.flatMap((group) => asArray(group.items)).reduce((acc, item) => {
-        if (!hasText(item.coverageText)) return acc;
-        acc[item.coverageText] = (acc[item.coverageText] || 0) + 1;
-        return acc;
-      }, {});
       const parts = [
         `${serviceItemCountText(displayItems)} מוצגים`,
         groupCount ? `${countLabel(groupCount, "קבוצה אחת", "קבוצות")} בתצוגה` : "",
         namedGroupCount ? `${countLabel(namedGroupCount, "קבוצת טיפול מוגדרת אחת", "קבוצות טיפול מוגדרות")}` : "",
         fallbackCount ? `${serviceItemCountText(fallbackCount)} תחת "טיפולים נוספים"` : "",
       ].filter(Boolean);
-      const coverageParts = Object.entries(coverageCounts)
-        .sort(([a], [b]) => a.localeCompare(b, "he"))
-        .map(([label, count]) => `${count} ${label}`);
-      if (coverageParts.length) parts.push(`כיסוי: ${hebrewJoin(coverageParts)}`);
       return `${hebrewJoin(parts)}.`;
     }
 
@@ -3025,7 +3010,7 @@
       }
       return traceArea(
         "address",
-        "כתובת",
+        "כתובת המרפאה",
         displayListText(parts),
         actions,
         { cityName: hit.cityName, accessibilityBool: hit.accessibilityBool, accessibility: hit.accessibility, remarks: hit.remarks },
@@ -3081,11 +3066,11 @@
         actions.push("אמצעי הקשר מוינו לפי סדר התצוגה העסקי.");
       }
       if (asArray(section?.messages).some((message) => message.type === "emailDisclaimer")) {
-        actions.push("נמצא דוא״ל, ולכן נוספה הודעת הבהרה לאזור אמצעי הקשר.");
+        actions.push("נמצאה כתובת מייל, ולכן נוספה הודעת הבהרה לאזור יצירת קשר עם המרפאה.");
       }
       return traceArea(
         "contacts",
-        "אמצעי קשר",
+        "יצירת קשר עם המרפאה",
         displayListText(displayItems.map(contactTraceLabel)),
         actions,
         { contacts: hit.contacts },
@@ -3184,7 +3169,7 @@
       }
       return traceArea(
         "services",
-        "ניתוחים וטיפולים",
+        "טיפולים, בדיקות וניתוחים",
         traceServicesDisplayText(groups),
         actions,
         { servTreats: hit.servTreats },
@@ -3207,7 +3192,7 @@
       }
       return traceArea(
         "absences",
-        "היעדרויות",
+        "היעדרויות ומילוי מקום",
         displayListText(displayItems.map((item) => item.text)),
         actions,
         { absences: hit.absences, substitutes: hit.substitutes },
@@ -3934,7 +3919,7 @@
               ${section.groups.map((group) => `
                 <details ${group.type === "reception" ? "open" : ""} onclick="event.stopPropagation()">
                   <summary onclick="event.stopPropagation()">${escapeHtml(group.title || "")}</summary>
-                  ${asArray(group.rows || group.items).map((row) => `<div>${escapeHtml(row.dayText || row.text || "")} ${escapeHtml(row.hoursText || "")} ${escapeHtml(row.notes || row.coverageText || "")}</div>`).join("")}
+                  ${asArray(group.rows || group.items).map((row) => `<div>${escapeHtml(row.dayText || row.text || "")} ${escapeHtml(row.hoursText || "")} ${escapeHtml(row.notes || "")}</div>`).join("")}
                 </details>
               `).join("")}
             </div>
