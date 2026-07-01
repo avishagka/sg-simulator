@@ -1910,17 +1910,20 @@
       let day;
       let month;
       let year;
-      const dotted = text.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+      const dotted = text.match(/^(\d{1,2})\.(\d{1,2})\.(\d{2}|\d{4})$/);
       const sap = text.match(/^(\d{4})(\d{2})(\d{2})$/);
       if (dotted) {
         day = Number(dotted[1]); month = Number(dotted[2]); year = Number(dotted[3]);
+        if (year < 100) year += 2000;
       } else if (sap) {
         year = Number(sap[1]); month = Number(sap[2]); day = Number(sap[3]);
       } else {
         return null;
       }
       const date = new Date(year, month - 1, day);
-      return Number.isNaN(date.getTime()) ? null : date;
+      if (Number.isNaN(date.getTime())) return null;
+      if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+      return date;
     }
 
     function sameDateString(a, b) {
@@ -2377,19 +2380,59 @@
       return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
     }
 
+    function formatDateObjectForDisplay(date) {
+      if (!date) return "";
+      return `${String(date.getDate()).padStart(2, "0")}/${String(date.getMonth() + 1).padStart(2, "0")}/${date.getFullYear()}`;
+    }
+
+    function dateKey(date) {
+      if (!date) return "";
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    }
+
+    function compareDateOnly(a, b) {
+      const aKey = dateKey(a);
+      const bKey = dateKey(b);
+      if (!aKey || !bKey) return 0;
+      return aKey.localeCompare(bKey);
+    }
+
+    function dateFromHitTimestamp(value) {
+      if (!hasText(value)) return todayInIsrael();
+      const text = String(value).trim();
+      const isoDate = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (isoDate) return new Date(Number(isoDate[1]), Number(isoDate[2]) - 1, Number(isoDate[3]));
+      const sourceDate = parseSourceDate(text);
+      if (sourceDate) return sourceDate;
+      const parsed = new Date(text);
+      if (!Number.isNaN(parsed.getTime())) return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+      return todayInIsrael();
+    }
+
     function absenceText(hit, absence, includeSubstitute = true) {
-      const start = formatDateForDisplay(absence.absenceBdate);
-      const end = formatDateForDisplay(absence.absenceEdate);
+      const startDate = parseSourceDate(absence.absenceBdate);
+      const endDate = parseSourceDate(absence.absenceEdate) || startDate;
       const female = avatarType(hit.serviceProviderGender) === "doctorFemale";
-      const who = female ? "הרופאה לא נמצאת" : "הרופא לא נמצא";
-      if (!start) return "";
-      let text = !end || start === end ? `${who} בתאריך: ${start}` : `${who} בין התאריכים: ${start} עד ${end}`;
+      if (!startDate) return "";
+      const start = formatDateObjectForDisplay(startDate);
+      const end = formatDateObjectForDisplay(endDate);
+      const comparisonDate = dateFromHitTimestamp(hit.timestamp ?? hit.timeStamp);
+      const isSingleDay = !endDate || dateKey(startDate) === dateKey(endDate);
+      const startComparison = compareDateOnly(startDate, comparisonDate);
+      let text;
+      if (isSingleDay && startComparison === 0) {
+        text = female ? "הרופאה לא נמצאת כרגע" : "הרופא לא נמצא כרגע";
+      } else if (isSingleDay) {
+        text = female ? `הרופאה תיעדר בתאריך: ${start}` : `הרופא ייעדר בתאריך: ${start}`;
+      } else {
+        text = female ? `הרופאה תיעדר בין התאריכים: ${start} ל- ${end}` : `הרופא ייעדר בין התאריכים: ${start} ל- ${end}`;
+      }
       const sub = includeSubstitute ? asArray(hit.substitutes)[0] : null;
       if (sub && hasText(sub.subName)) {
-        text += `, ממלא מקום: ${sub.subName}`;
+        text += `, ממלא/ת מקום: ${sub.subName}`;
         if (hasText(sub.subRemark)) text += ` - ${sub.subRemark}`;
       }
-      return text;
+      return `${text}.`;
     }
 
     function absenceMessages(hit) {
@@ -2622,7 +2665,7 @@
       const groups = Object.values(groupsMap)
         .sort((a, b) => Number(a.titleMissing) - Number(b.titleMissing))
         .map(({ titleMissing, ...group }) => group);
-      return { title: "טיפולים, בדיקות וניתוחים", groups };
+      return { title: "טיפולים וניתוחים", groups };
     }
 
     function buildAbsencesSection(hit) {
@@ -2773,13 +2816,22 @@
       const absence = asArray(hit.absences)[0];
       const displayItem = asArray(result.providerDetails.sections?.absences?.items)[0];
       if (!absence || !displayItem) return `לא נבנה טקסט היעדרות כי לא חזרה היעדרות תקפה מה-Agent`;
-      const start = formatDateForDisplay(absence.absenceBdate);
-      const end = formatDateForDisplay(absence.absenceEdate);
+      const startDate = parseSourceDate(absence.absenceBdate);
+      const endDate = parseSourceDate(absence.absenceEdate) || startDate;
+      const start = formatDateObjectForDisplay(startDate);
+      const end = formatDateObjectForDisplay(endDate);
+      const comparisonDate = dateFromHitTimestamp(hit.timestamp ?? hit.timeStamp);
+      const isSingleDay = !endDate || dateKey(startDate) === dateKey(endDate);
       const female = avatarType(hit.serviceProviderGender) === "doctorFemale";
-      const who = female ? "הרופאה לא נמצאת" : "הרופא לא נמצא";
-      const dateRule = !end || start === end ? `תאריך יחיד -> ${start}` : `טווח תאריכים -> ${start} עד ${end}`;
+      const who = female ? "נקבה" : "זכר";
+      const startComparison = compareDateOnly(startDate, comparisonDate);
+      const dateRule = isSingleDay && startComparison === 0
+        ? `תאריך יחיד שווה לתאריך ה-hit timestamp -> מוצג טקסט "כרגע"`
+        : (isSingleDay
+          ? `תאריך יחיד עתידי -> ${start}`
+          : `טווח תאריכים -> ${start} ל- ${end}`);
       const sub = asArray(hit.substitutes)[0];
-      const subRule = sub && hasText(sub.subName) ? `נוסף ממלא מקום "${sub.subName}"${hasText(sub.subRemark) ? ` עם הערה "${sub.subRemark}"` : ""}` : "לא נוסף ממלא מקום";
+      const subRule = sub && hasText(sub.subName) ? `נוסף ממלא/ת מקום "${sub.subName}"${hasText(sub.subRemark) ? ` עם הערה "${sub.subRemark}"` : ""}` : "לא נוסף ממלא/ת מקום";
       const reasonRule = hasText(displayItem.reason) ? `reason הוצג בנפרד="${displayItem.reason}"` : "reason הושמט כי אין ערך מותר להצגה";
       return `${who}; ${dateRule}; ${subRule}; ${reasonRule}; text="${displayItem.text}"`;
     }
@@ -2850,7 +2902,7 @@
             }),
           },
           {
-            title: "בניית אזור טיפולים, בדיקות וניתוחים",
+            title: "בניית אזור טיפולים וניתוחים",
             value: `${displayServiceItems} פריטי טיפול לתצוגה מתוך ${sourceTreats} רשומות Agent`,
             details: results.map((result) => {
               const hit = byId.get(result.resultId);
@@ -3169,7 +3221,7 @@
       }
       return traceArea(
         "services",
-        "טיפולים, בדיקות וניתוחים",
+        "טיפולים וניתוחים",
         traceServicesDisplayText(groups),
         actions,
         { servTreats: hit.servTreats },
@@ -3182,10 +3234,10 @@
       if (!section) return null;
       const displayItems = asArray(section?.items);
       const actions = [];
-      if (displayItems.length) actions.push("נבנה טקסט היעדרות מטווח התאריכים שהתקבל מה-Agent.");
+      if (displayItems.length) actions.push("נבנה טקסט היעדרות מלא לפי תאריך ההיעדרות, תאריך ה-hit timestamp ומגדר נותן השירות.");
       const substitute = asArray(hit.substitutes)[0];
       if (substitute && hasText(substitute.subName)) {
-        actions.push(`ממלא מקום נוסף לטקסט ההיעדרות: ${substitute.subName}.`);
+        actions.push(`ממלא/ת מקום נוסף לטקסט ההיעדרות: ${substitute.subName}.`);
       }
       if (displayItems.some((item) => hasText(item.reason))) {
         actions.push("סיבת היעדרות התקבלה כערך שמותר להציג, ולכן נוספה בפרטי ההיעדרות.");
